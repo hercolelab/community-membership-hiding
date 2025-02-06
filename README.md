@@ -8,9 +8,6 @@ The **Community Membership Hiding (CMH)** problem addresses this issue by strate
 
 This repository provides an implementation of **∇-CMH**, a gradient-based optimization approach, and a **Deep Reinforcement Learning (DRL) agent** method for community membership hiding. 
 
-- **∇-CMH**: Reformulates the problem as a differentiable constrained optimization task, allowing for effectively and efficiently hiding a node’s community membership.
-- **DRL-Agent**: Uses deep reinforcement learning to iteratively modify the network structure, learning an optimal policy for hiding a node from its community.
-
 Our implementation supports multiple real-world network datasets and different community detection algorithms.
 
 ## Problem Definition
