@@ -17,6 +17,13 @@ Our implementation supports multiple real-world network datasets and different c
 
 Let $G = (V, E)$ be an undirected graph where $v$ is the set of nodes and $E$ is the set of edges. A **community detection algorithm** $f(\cdot)$ partitions the nodes into non-overlapping communities $\{C_1, C_2, ..., C_k\}$, where each node belongs to exactly one community. Given a **target node** $u$ that belongs to a community $C_i$ (i.e., $u \in C_i$), the objective of the CMH problem is to modify the structure of $G$ such that, when the community detection algorithm $f(\cdot)$ is applied to the modified graph $G'$, the node $u$ is no longer recognized as a member of $C_i$.
 
+<p align="center">
+  <img src="images/old_communities_v2.png" width="30%" />
+  <img src="images/new_graph_v2.png" width="30%" />
+  <img src="images/new_communities_v2.png" width="30%" />
+</p>
+
+
 ### Counterfactual Graph Search
 
 To achieve this, we define a **perturbation function** $h_{\theta}(\cdot)$, parameterized by $\theta$, that modifies $g$ into a new graph $G' = h_{\theta}(G)$ by adding or removing edges in the neighborhood of $u$. The goal is to find an optimal function $h^*_{\theta}$ that ensures $u$ is removed from its original community:
