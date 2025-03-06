@@ -51,7 +51,7 @@ This folder contains the dataset used for CMH experiments. It includes .txt data
 [vote](https://networkrepository.com/soc-wiki-Vote.php): This dataset includes all Wikipedia voting data from its inception until January 2008. Nodes represent Wikipedia users, and directed edges indicate that one user voted for another.  
 
 - **Nodes:** 889  
-- **Edges:** 2,900
+- **Edges:** 2,914
 
 ## Western U.S. Power Grid  
 
