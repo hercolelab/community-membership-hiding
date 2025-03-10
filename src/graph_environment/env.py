@@ -1,4 +1,5 @@
 from src.community_detection.algorithms import CommunityDetectionAlg
+from src.community_detection.similarity_functions import CommunitySimilarity
 from src.utils.utils import Utils, FilePaths, DatasetNames, DatasetFullNames, DetectionAlgorithmsNames, ExperimentHyps
 from typing import List, Tuple, Callable
 import igraph as ig
@@ -8,7 +9,9 @@ import random
 import time
 import torch
 import copy
+import logging
 
+log = logging.getLogger(__name__)
 class GraphEnvironment(object):
     """Class for the Graph Environment"""
 
@@ -48,11 +51,32 @@ class GraphEnvironment(object):
         self.community_detection_alg_name_output: str = getattr(DetectionAlgorithmsNames, self.community_detection_alg_name).value
         self.community_detection_alg: CommunityDetectionAlg = None
         # Communities
-        self.original_communities: List[List[int]] = None
-        self.old_communities: List[List[int]] = None # Communities before the last action, used by some methods to compute distances between communities
-        self.new_communities: List[List[int]] = None
+        self.original_communities: cdlib.NodeClustering = None
+        self.old_communities: cdlib.NodeClustering = None # Communities before the last action, used by some methods to compute distances between communities
+        self.new_communities: cdlib.NodeClustering = None
         # Set the community detection algorithm
         self.set_communities()
+
+        # ------ SIMILARITY FUNCTIONS ------ #
+        # Similarity threshold
+        self.tau: float = 0.5
+        # Community Similarity
+        self.community_similarity: Callable[[List[int], List[int]], float] = CommunitySimilarity("SOR").select_similarity_function()
+        # Graph Similarity
+        self.graph_similarity = None
+
+
+        # ------ COMMUNITY MEMBERSHIP HIDING ------ #
+        # Target node
+        self.target_node: int = None
+        # Target community
+        self.target_community: List[int] = None
+        # Budget
+        self.budget: int = None
+
+        # ------ ENVIRONMENT INFO ------ #
+        self.print_environment_info()
+
 
     
     # ============================================================================= #
@@ -78,7 +102,71 @@ class GraphEnvironment(object):
     #                              GETTERS FUNCTIONS                                #
     # ============================================================================= #
 
-    ## TO DO
+    def get_average_budget(self) -> int:
+        """
+        Get the average budget for the graph, which is equal to |E|/|V|.
+        We consider just the integer part of this division.
+        If the division result is less than 3, we consider |E|/|V| + 1.
+        """
+        mu = self.original_graph.ecount() // self.original_graph.vcount()
+        if mu < 2:
+            return mu + 1
+        return mu
+
+        return self.original_graph.average_degree()
+
+    def get_new_community(
+        self,
+        new_community_structure: List[List[int]]
+    ) -> List[int]:
+        """
+        Search the community target in the new community structure after changes. 
+
+        Parameters
+        ----------
+        node_target : int
+            Target node to be hidden from the community
+        new_community_structure : List[List[int]]
+            New community structure after deception
+
+        Returns
+        -------
+        List[int]
+            New community target after deception
+        """
+        for community in new_community_structure.communities:
+            if self.target_node in community:
+                return community
+        raise ValueError("Community not found")
+    
+    def get_evasion_goal(self, new_community: int) -> int:
+        """
+        Check if the goal of hiding the target node was achieved
+
+        Parameters
+        ----------
+        new_community : int
+            New community of the target node
+
+        Returns
+        -------
+        int
+            1 if the goal was achieved, 0 otherwise
+        """
+        # Copy the communities to avoid modifying the original ones
+        new_community_copy = new_community.copy()
+        new_community_copy.remove(self.target_node)
+        old_community_copy = self.target_community.copy()
+        old_community_copy.remove(self.target_node)
+        # Compute the similarity between the new and the old community
+        similarity = self.env.community_similarity(
+            new_community_copy,
+            old_community_copy
+        )
+        del new_community_copy, old_community_copy
+        if similarity <= self.env.tau:
+            return 1
+        return 0
 
 
     # ============================================================================= #
@@ -88,16 +176,16 @@ class GraphEnvironment(object):
     def print_environment_info(self) -> None:
         """Print the environment info"""
 
-        print("="*60)
-        print(f"GRAPH ENVIRONMENT INFORMATIONS")
-        print("="*60)
-        print(f"Graph: {self.graph_name_output} -- {self.graph_name_full}")
-        print(f"Community Detection Algorithm: {self.community_detection_alg_name_output}")
-        print(f"Number of nodes: {self.original_graph.vcount()}")
-        print(f"Number of edges: {self.original_graph.ecount()}")
-        print(f"Number of communities: {len(self.original_communities)}")
-        #print(f"Communities: {self.original_communities}")
-        print("="*60)
+        log.info("="*60)
+        log.info("GRAPH ENVIRONMENT INFORMATIONS")
+        log.info("="*60)
+        log.info(f"Graph: {self.graph_name_output} -- {self.graph_name_full}")
+        log.info(f"Community Detection Algorithm: {self.community_detection_alg_name_output}")
+        log.info(f"Number of nodes: {self.original_graph.vcount()}")
+        log.info(f"Number of edges: {self.original_graph.ecount()}")
+        log.info(f"Number of communities: {len(self.original_communities.communities)}")
+        #log.info(f"Communities: {self.original_communities}")
+        log.info("="*60)
 
 
 

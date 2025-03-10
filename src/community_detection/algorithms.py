@@ -26,7 +26,7 @@ class CommunityDetectionAlg(object):
 		self.graph = graph
 		self.seed = ExperimentHyps.seed.value
 
-	def community_detection(self, graph: ig.Graph, args: dict = None) -> List[List[int]]:
+	def community_detection(self, graph: ig.Graph, args: dict = None) -> cdlib.NodeClustering:
 		"""
 		Compute the community detection algorithm
 
@@ -64,11 +64,19 @@ class CommunityDetectionAlg(object):
 		else:
 			raise ValueError("Invalid algorithm name")
 		
-	def from_vertexcluster_tolist(self, communities: ig.VertexClustering) -> List[List[int]]:
+	def from_vertexcluster_tolist(self, communities: ig.VertexClustering) -> cdlib.NodeClustering:
 		"""
 		Convert the VertexClustering object to a list of list of vertices
 		"""
-		return [c for c in communities]
+		com_list = [c for c in communities]
+		# Create a NodeClustering object
+		node_cluster = cdlib.NodeClustering(
+			communities=com_list,
+			graph=self.graph,
+			method_name=self.alg_name,
+			overlap=False
+		)
+		return node_cluster
 	
 	def compute_gre(self, graph: ig.Graph, args_gre: dict) -> List[List[int]]:
 		"""

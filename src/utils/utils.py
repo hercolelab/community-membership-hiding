@@ -84,6 +84,13 @@ class iGraphRNG:
     def gauss(self, mu:float, sigma:float):
         return self.generator.gauss(mu, sigma)
 
+class SimilarityFunctionsNames(Enum):
+    """ Enum class for the similarity functions """
+
+    # Community similarity function
+    SOR = "sorensen"
+    # Graph similarity function
+    JAC = "jaccard"
 
 
 class Utils:
@@ -127,7 +134,6 @@ class Utils:
         """
         if not os.path.exists(path):
             os.makedirs(path)
-    
 
 # ------ Example usage for the Enums ------ #
 #dataset = "KAR"

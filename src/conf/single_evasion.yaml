@@ -1,0 +1,4 @@
+graph: KAR
+community_detection: LOUV
+target_node: 11
+budget_multiplier: 1
