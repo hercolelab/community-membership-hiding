@@ -11,6 +11,7 @@ import scipy.io
 import json
 import os
 import math
+import cdlib
 
 
 class FilePaths(Enum):
@@ -60,6 +61,16 @@ class DetectionAlgorithmsNames(Enum):
     LAB = "label_propagation"
     LOUV = "louvain"
     WALK = "walktrap"
+
+class EvasionAlgorithmsNames(Enum):
+    RAND = "random"
+    DEG = "degree"
+    BETW = "betweenness"
+    ROAM = "roam"
+    DICE = "dice"
+    NABLA = "nabla-cmh"
+    DRL = "drl-agent"
+    GRE = "greedy"
 
 class ExperimentHyps(Enum):
     """Enum class for the experiment hyperparameters"""

@@ -1,7 +1,7 @@
 from src.community_detection.algorithms import CommunityDetectionAlg
 from src.community_detection.similarity_functions import CommunitySimilarity
 from src.utils.utils import Utils, FilePaths, DatasetNames, DatasetFullNames, DetectionAlgorithmsNames, ExperimentHyps
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Optional
 import igraph as ig
 import numpy as np
 import cdlib
@@ -19,7 +19,10 @@ class GraphEnvironment(object):
             self, 
             graph_name: str,
             community_detection_alg: str,
-        ) -> None:
+            target_node: Optional[int] = 0,
+            budget_multiplier: Optional[int] = 1,
+            similarity_threshold: Optional[float] = 0.5
+    ) -> None:
         """
         Initialize the Graph Environment object
 
@@ -28,7 +31,13 @@ class GraphEnvironment(object):
         graph_name : str
             The name of the graph, e.g. "KAR"
         community_detection_alg : str
-            The name of the community detection algorithm   
+            The name of the community detection algorithm, e,g "GRE"
+        target_node : Optional[int], default=None
+            The target node to be hidden from the community
+        budget_multiplier : Optional[int], default=1
+            The budget multiplier
+        similarity_threshold : Optional[float], default=0.5
+            The similarity threshold   
         """
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.seed = ExperimentHyps.seed
@@ -45,6 +54,23 @@ class GraphEnvironment(object):
         # Set the graph
         self.set_graph()
 
+        # ------ COMMUNITY MEMBERSHIP HIDING ------ #
+        # Target node
+        self.target_node: int = target_node
+        # Target community
+        self.target_community: List[int] = None
+        # Budget
+        self.budget_multiplier: int = budget_multiplier
+        self.budget: int = self.get_average_budget() * self.budget_multiplier
+
+        # ------ SIMILARITY FUNCTIONS ------ #
+        # Similarity threshold
+        self.tau: float = similarity_threshold
+        # Community Similarity
+        self.community_similarity: Callable[[List[int], List[int]], float] = CommunitySimilarity("SOR").select_similarity_function()
+        # Graph Similarity
+        self.graph_similarity = None
+
         # ------ COMMUNITY DETECTION ------ #
         # Community detection algorithm
         self.community_detection_alg_name: str = community_detection_alg
@@ -54,25 +80,15 @@ class GraphEnvironment(object):
         self.original_communities: cdlib.NodeClustering = None
         self.old_communities: cdlib.NodeClustering = None # Communities before the last action, used by some methods to compute distances between communities
         self.new_communities: cdlib.NodeClustering = None
-        # Set the community detection algorithm
-        self.set_communities()
-
-        # ------ SIMILARITY FUNCTIONS ------ #
-        # Similarity threshold
-        self.tau: float = 0.5
-        # Community Similarity
-        self.community_similarity: Callable[[List[int], List[int]], float] = CommunitySimilarity("SOR").select_similarity_function()
-        # Graph Similarity
-        self.graph_similarity = None
-
-
-        # ------ COMMUNITY MEMBERSHIP HIDING ------ #
-        # Target node
-        self.target_node: int = None
-        # Target community
         self.target_community: List[int] = None
-        # Budget
-        self.budget: int = None
+        self.target_community_size: int = None
+        # Set the community detection algorithm
+        self.set_communities()     
+
+        # ----- GRAPH FEATURES ------ #
+        # We compute some features for the graph, which are used by some methods
+        self.graph_degrees = self.original_graph.degree()
+
 
         # ------ ENVIRONMENT INFO ------ #
         self.print_environment_info()
@@ -96,6 +112,8 @@ class GraphEnvironment(object):
         self.community_detection_alg = CommunityDetectionAlg(self.community_detection_alg_name_output)
         self.original_communities = self.community_detection_alg.community_detection(self.original_graph)
         self.old_communities = self.original_communities
+        self.target_community = self.get_community(self.original_communities)
+        self.target_community_size = len(self.target_community)
         
 
     # ============================================================================= #
@@ -115,7 +133,7 @@ class GraphEnvironment(object):
 
         return self.original_graph.average_degree()
 
-    def get_new_community(
+    def get_community(
         self,
         new_community_structure: List[List[int]]
     ) -> List[int]:
@@ -139,7 +157,7 @@ class GraphEnvironment(object):
                 return community
         raise ValueError("Community not found")
     
-    def get_evasion_goal(self, new_community: int) -> int:
+    def get_evasion_goal(self, new_community: List[int]) -> int:
         """
         Check if the goal of hiding the target node was achieved
 
@@ -159,14 +177,28 @@ class GraphEnvironment(object):
         old_community_copy = self.target_community.copy()
         old_community_copy.remove(self.target_node)
         # Compute the similarity between the new and the old community
-        similarity = self.env.community_similarity(
+        similarity = self.community_similarity(
             new_community_copy,
             old_community_copy
         )
         del new_community_copy, old_community_copy
-        if similarity <= self.env.tau:
+        if similarity <= self.tau:
             return 1
         return 0
+        
+    def get_metrics(
+        self,
+        cf_graph: ig.Graph,
+    ) -> Tuple[int,float]:
+        
+        """
+        Compute the goal and NMI metrics.
+        """
+        new_communities: cdlib.NodeClustering = self.community_detection_alg.community_detection(cf_graph)
+        new_community = self.get_community(new_communities)
+        goal: int = self.get_evasion_goal(new_community)
+        nmi: float = self.original_communities.normalized_mutual_information(new_communities).score
+        return goal, nmi
 
 
     # ============================================================================= #

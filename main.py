@@ -5,3 +5,4 @@ from src.utils.utils import ExperimentHyps
 graph_name = "KAR"
 community_detection_alg = "LOUV"
 env = GraphEnvironment(graph_name, community_detection_alg)
+print(env.graph_degrees)
