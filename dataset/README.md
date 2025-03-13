@@ -31,7 +31,7 @@ This folder contains the dataset used for CMH experiments. It includes .txt data
 }
 ```
 
-### Warpcast
+### [4. Warpcast](https://docs.neynar.com/docs/how-to-query-neynar-sql-playground-for-farcaster-data)
 
 # Networks
 
@@ -77,3 +77,4 @@ This folder contains the dataset used for CMH experiments. It includes .txt data
 - **Edges:** 93,497
 
 ## Warpcast subnetworks
+We extrapolate interactions between active users with maximum FID equal to 500,1k,...,200k.

@@ -1,8 +1,7 @@
 graph: KAR
 community_detection: GRE
-target_node: 11
+target_node: 0
 budget_multiplier: 1
 similarity_threshold: 0.5
 evasion_attack_algs:
-- RAND
-- DEG
+- BETW

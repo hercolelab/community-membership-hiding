@@ -88,6 +88,7 @@ class GraphEnvironment(object):
         # ----- GRAPH FEATURES ------ #
         # We compute some features for the graph, which are used by some methods
         self.graph_degrees = self.original_graph.degree()
+        self.graph_betweenness = self.original_graph.betweenness()
 
 
         # ------ ENVIRONMENT INFO ------ #

@@ -1,19 +1,23 @@
 from src.graph_environment.env import GraphEnvironment
+from src.utils.utils import DetectionAlgorithmsNames, Utils
+from src.community_detection.algorithms import CommunityDetectionAlg
+
 import igraph as ig
-from typing import List, Tuple
+from typing import List, Callable, Tuple
+import random
 import copy
 
 
-class DegreeHiding:
+class CentralityHiding:
     def __init__(
             self, 
             env: GraphEnvironment, 
-            target_node: int,
-            budget: int, 
+            target_node: int, 
+            budget: int,
         )-> None:
 
         """
-        Initialize the DegreeHiding object
+        Initialize the CentralityHiding object
 
         Parameters
         ----------
@@ -29,21 +33,18 @@ class DegreeHiding:
         self.graph: ig.Graph = self.env.original_graph
         self.budget: int = budget
         self.target_node: int = target_node
-        self.degrees: List[int] = self.env.graph_degrees
+        self.centrality: List[float] = self.env.graph_betweenness
         self.possible_actions: List[Tuple[int,int]] = [
-            (node, self.degrees[node]) 
-            for node in range(self.graph.vcount()) 
+            (node, self.centrality[node])
+            for node in range(self.graph.vcount())
             if node != self.target_node
         ]
+
 
     def community_membership_hiding(self) -> Tuple[ig.Graph, int, dict]:
         """
         Hide the target node from the target community by rewiring its edges,
-        choosing the node with the highest degree between adding or removing an edge.
-
-        Returns
-        -------
-        
+        choosing the node with the highest centrality between adding or removing an edge."
         """
         graph: ig.Graph = self.graph.copy()
         possible_actions: List[Tuple[int,int]] = copy.copy(self.possible_actions)
@@ -54,7 +55,7 @@ class DegreeHiding:
         }
 
         steps: int = 0
-                
+
         # Evasion attack
         while (self.budget - steps) > 0:  
 
@@ -73,6 +74,6 @@ class DegreeHiding:
                 changes["add"].append(edge)
             
             steps += 1
-        
+
         del possible_actions
         return graph, steps, changes
