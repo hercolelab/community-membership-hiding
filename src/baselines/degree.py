@@ -13,7 +13,9 @@ class DegreeHiding:
         )-> None:
 
         """
-        Initialize the DegreeHiding object
+        Initialize the DegreeHiding object.
+        The goal is to hide the target node from the target community by rewiring its edges,
+        choosing the node with the highest degree between adding or removing an edge.
 
         Parameters
         ----------
@@ -43,7 +45,12 @@ class DegreeHiding:
 
         Returns
         -------
-        
+        graph : ig.Graph
+            The graph after the Degree Hiding heuristic.
+        steps : int
+            The number of steps taken to hide the target node
+        changes : dict
+            The changes made to the graph
         """
         graph: ig.Graph = self.graph.copy()
         possible_actions: List[Tuple[int,int]] = copy.copy(self.possible_actions)

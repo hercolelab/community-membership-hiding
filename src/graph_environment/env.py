@@ -172,6 +172,9 @@ class GraphEnvironment(object):
         int
             1 if the goal was achieved, 0 otherwise
         """
+        # If the target node is the only node in the community, the goal is achieved
+        if len(new_community) == 1:
+            return 1
         # Copy the communities to avoid modifying the original ones
         new_community_copy = new_community.copy()
         new_community_copy.remove(self.target_node)

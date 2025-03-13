@@ -5,11 +5,7 @@ from typing import List, Tuple
 import random
 import copy
 
-class RandomHiding():
-    """
-    Baseline for CMH where we modify the target node's neighbourhood randomly
-    """
-    
+class RandomHiding():  
     def __init__(
         self, 
         env: GraphEnvironment, 
@@ -18,7 +14,9 @@ class RandomHiding():
     )-> None:
         
         """
-        Initialize the RandomHiding object
+        Initialize the RandomHiding object.
+        The goal is to hide the target node from the target community by rewiring its edges,
+        choosing randomly between adding or removing an edge.
 
         Parameters
         ----------
@@ -43,8 +41,12 @@ class RandomHiding():
         
         Returns
         -------
-        Tuple[ig.Graph, int, dict]
-            The new graph, the number of steps and the changes
+        graph : ig.Graph
+            The graph after the Random Hiding heuristic.
+        steps : int
+            The number of steps taken to hide the target node
+        changes : dict
+            The changes made to the graph
         """
         graph: ig.Graph = self.graph.copy()
         possible_actions = copy.copy(self.possible_actions)

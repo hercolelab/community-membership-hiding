@@ -7,6 +7,7 @@ from omegaconf import DictConfig
 from src.baselines.random import RandomHiding
 from src.baselines.degree import DegreeHiding
 from src.baselines.betweenness import CentralityHiding
+from src.baselines.roam import RoamHiding
 from time import time
 import json
 from hydra.core.hydra_config import HydraConfig
@@ -36,9 +37,9 @@ from hydra.core.hydra_config import HydraConfig
 # - BETW (betweenness),
 # - ROAM (roam),
 # - DICE (dice),
-# - NABLA (nabla-cmh),
-# - DRL (drl-agent),
-# - GRE (greedy)
+# - NABLA (nabla-cmh), # not for now
+# - DRL (drl-agent),   # not for now
+# - GRE (greedy)       # not for now
 #
 # Suggested budget multiplier: [0.5,1,2]
 # Suggested similarity threshold: [0.3,0.5,0.8]
@@ -47,8 +48,9 @@ from hydra.core.hydra_config import HydraConfig
 # ------ ATTACK CONFIGURATION ------ #
 graph_name = "KAR"
 community_detection_alg = "GRE"
-evasion_attack_algs = ["BETW"]
-target_node = 0
+evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM"]
+#evasion_attack_algs = ["ROAM"]
+target_node = 19
 budget_multiplier = 1
 similarity_threshold = 0.5
 
@@ -106,6 +108,8 @@ def main(cfg: DictConfig) -> None:
             evasion_alg = DegreeHiding(env, target_node, env.budget)
         elif alg == EvasionAlgorithmsNames.BETW.name:
             evasion_alg = CentralityHiding(env, target_node, env.budget)
+        elif alg == EvasionAlgorithmsNames.ROAM.name:
+            evasion_alg = RoamHiding(env, target_node, env.budget)
         else:
             raise ValueError("Invalid evasion attack algorithm")
     

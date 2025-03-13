@@ -1,10 +1,6 @@
 from src.graph_environment.env import GraphEnvironment
-from src.utils.utils import DetectionAlgorithmsNames, Utils
-from src.community_detection.algorithms import CommunityDetectionAlg
-
 import igraph as ig
-from typing import List, Callable, Tuple
-import random
+from typing import List, Tuple
 import copy
 
 
@@ -17,7 +13,9 @@ class CentralityHiding:
         )-> None:
 
         """
-        Initialize the CentralityHiding object
+        Initialize the CentralityHiding object.
+        The goal is to hide the target node from the target community by rewiring its edges,
+        choosing the node with the highest degree between adding or removing an edge.
 
         Parameters
         ----------
@@ -45,6 +43,15 @@ class CentralityHiding:
         """
         Hide the target node from the target community by rewiring its edges,
         choosing the node with the highest centrality between adding or removing an edge."
+
+        Returns
+        -------
+        graph : ig.Graph
+            The graph after the Centrality Hiding heuristic.
+        steps : int
+            The number of steps taken to hide the target node
+        changes : dict
+            The changes made to the graph  
         """
         graph: ig.Graph = self.graph.copy()
         possible_actions: List[Tuple[int,int]] = copy.copy(self.possible_actions)
