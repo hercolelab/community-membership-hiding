@@ -8,6 +8,7 @@ from src.baselines.random import RandomHiding
 from src.baselines.degree import DegreeHiding
 from src.baselines.betweenness import CentralityHiding
 from src.baselines.roam import RoamHiding
+from src.baselines.dice import DiceHiding
 from time import time
 import json
 from hydra.core.hydra_config import HydraConfig
@@ -48,9 +49,9 @@ from hydra.core.hydra_config import HydraConfig
 # ------ ATTACK CONFIGURATION ------ #
 graph_name = "KAR"
 community_detection_alg = "GRE"
-evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM"]
-#evasion_attack_algs = ["ROAM"]
-target_node = 19
+evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE"]
+#evasion_attack_algs = ["DICE"]
+target_node = 22
 budget_multiplier = 1
 similarity_threshold = 0.5
 
@@ -110,6 +111,8 @@ def main(cfg: DictConfig) -> None:
             evasion_alg = CentralityHiding(env, target_node, env.budget)
         elif alg == EvasionAlgorithmsNames.ROAM.name:
             evasion_alg = RoamHiding(env, target_node, env.budget)
+        elif alg == EvasionAlgorithmsNames.DICE.name:
+            evasion_alg = DiceHiding(env, target_node, env.budget)
         else:
             raise ValueError("Invalid evasion attack algorithm")
     
@@ -148,11 +151,8 @@ def main(cfg: DictConfig) -> None:
         json.dump(results, json_file, indent=4)
 
     #test changes 
-    log.info(f"Old Neighboors of {target_node}: {env.original_graph.neighbors(target_node)}")
-    log.info(f"New Neighboors of {target_node}: {new_graph.neighbors(target_node)}")
-
-
-    
+    #log.info(f"Old Neighboors of {target_node}: {env.original_graph.neighbors(target_node)}")
+    #log.info(f"New Neighboors of {target_node}: {new_graph.neighbors(target_node)}")
 
 
 

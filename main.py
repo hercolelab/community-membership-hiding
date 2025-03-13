@@ -5,4 +5,8 @@ from src.utils.utils import ExperimentHyps
 graph_name = "KAR"
 community_detection_alg = "LOUV"
 env = GraphEnvironment(graph_name, community_detection_alg)
-print(env.graph_degrees)
+graph = env.original_graph.copy()
+community = env.target_community
+print(community)
+subgraph = graph.subgraph(community)
+print(subgraph.summary())

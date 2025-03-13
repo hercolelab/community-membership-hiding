@@ -1,7 +1,6 @@
 from src.graph_environment.env import GraphEnvironment
 import igraph as ig
-from typing import List, Tuple
-import copy
+from typing import Tuple
 
 
 class RoamHiding:
@@ -63,7 +62,7 @@ class RoamHiding:
         if len(target_node_neighbours) == 0:
             #print("No neighbours for the target node", self.target_node)
             return graph, steps, changes
-        # Choose v0 as the neighbour of target_node with higher degree (our choice), or randomly
+        # Choose v0 as the neighbour of target_node with higher degree (our choice)
         v0: int = target_node_neighbours[0]
         for v in target_node_neighbours:
             if graph.degree(v) > graph.degree(v0):
