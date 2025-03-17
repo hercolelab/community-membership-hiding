@@ -57,21 +57,19 @@ class GraphEnvironment(object):
         # ------ COMMUNITY MEMBERSHIP HIDING ------ #
         # Target node
         self.target_node: int = target_node
+        self.list_target_nodes: List[int] = None # for the CMH experiment
         # Target community
         self.target_community: List[int] = None
+        self.target_community_size: int = None
+        self.preferred_community_size: float = ExperimentHyps.target_community_size.value[0]
+        self.max_deceptions_for_community: int = ExperimentHyps.max_steps_community_eval.value
         # Budget
         self.budget_multiplier: int = budget_multiplier
-        self.budget: int = self.get_average_budget() * self.budget_multiplier
-
-        # ------ SIMILARITY FUNCTIONS ------ #
+        self.budget: int = self.get_budget()
         # Similarity threshold
         self.tau: float = similarity_threshold
-        # Community Similarity
-        self.community_similarity: Callable[[List[int], List[int]], float] = CommunitySimilarity("SOR").select_similarity_function()
-        # Graph Similarity
-        self.graph_similarity = None
-
-        # ------ COMMUNITY DETECTION ------ #
+        
+         # ------ COMMUNITY DETECTION ------ #
         # Community detection algorithm
         self.community_detection_alg_name: str = community_detection_alg
         self.community_detection_alg_name_output: str = getattr(DetectionAlgorithmsNames, self.community_detection_alg_name).value
@@ -80,10 +78,14 @@ class GraphEnvironment(object):
         self.original_communities: cdlib.NodeClustering = None
         self.old_communities: cdlib.NodeClustering = None # Communities before the last action, used by some methods to compute distances between communities
         self.new_communities: cdlib.NodeClustering = None
-        self.target_community: List[int] = None
-        self.target_community_size: int = None
-        # Set the community detection algorithm
+        # Set the community detection algorithm and the communities
         self.set_communities()     
+
+        # ------ SIMILARITY FUNCTIONS ------ #
+        # Community Similarity
+        self.community_similarity: Callable[[List[int], List[int]], float] = CommunitySimilarity("SOR").select_similarity_function()
+        # Graph Similarity
+        self.graph_similarity = None
 
         # ----- GRAPH FEATURES ------ #
         # We compute some features for the graph, which are used by some methods
@@ -95,6 +97,53 @@ class GraphEnvironment(object):
         self.print_environment_info()
 
 
+
+    
+    # ============================================================================= #
+    #                           EPISODE RESET FUNCTIONS                             #
+    # ============================================================================= #
+
+    def change_target_community(
+            self,
+            ) -> None:
+        """
+        Change the target community according to preferred sizes.
+        """
+        communities: List[int] = self.original_communities.communities
+        communities_lenghts: List[int] = [len(c) for c in communities]
+        preferred_size: int = int(
+            np.ceil(max(communities_lenghts) * self.preferred_community_size)
+        )
+        closest: int = min(communities_lenghts, key=lambda x: abs(x - preferred_size))
+        self.target_community: List[int] = communities[communities_lenghts.index(closest)]
+        self.target_community_size: int = len(self.target_community)
+        target_community: List[int] = self.target_community.copy()
+        random.seed(self.seed)
+        random.shuffle(target_community)
+        self.list_target_nodes = target_community[:self.max_deceptions_for_community]
+
+    
+    def change_target_node(
+            self,
+            step: int,
+            target_node: Optional[int]=None,
+        ) -> None:
+        """
+        Change the target node manually or according to community_target_nodes
+
+        Parameters
+        ----------
+        step : int
+            Step of the episode, i.e. index in the list
+        target_node : Optional[int], default=None
+            Target node to be hidden from the community
+        """
+
+        if target_node is not None:
+            self.target_node = target_node
+        else:
+            self.target_node = self.list_target_nodes[step]
+
     
     # ============================================================================= #
     #                              SETTERS FUNCTIONS                                #
@@ -102,13 +151,13 @@ class GraphEnvironment(object):
 
 
     def set_graph(self) -> None:
-        """Set the graph """
+        """Set the igraph.Graph object in the environment"""
         
         self.original_graph = Utils.import_graph(getattr(FilePaths, self.graph_name).value)
         #self.graph_agent = self.set_graph_agent()
 
     def set_communities(self) -> None:
-        """Set the community detection algorithm"""
+        """Set the community detection algorithm class in the environment"""
 
         self.community_detection_alg = CommunityDetectionAlg(self.community_detection_alg_name_output)
         self.original_communities = self.community_detection_alg.community_detection(self.original_graph)
@@ -131,8 +180,18 @@ class GraphEnvironment(object):
         if mu < 2:
             return mu + 1
         return mu
-
-        return self.original_graph.average_degree()
+    
+    def get_budget(self) -> int:
+        """
+        Get the budget for the environment based on the budget multiplier and average budget
+        
+        Returns
+        -------
+        int
+            The budget for the environment
+        """
+        budget: int = int(self.get_average_budget() * self.budget_multiplier)
+        return budget
 
     def get_community(
         self,

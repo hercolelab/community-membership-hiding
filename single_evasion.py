@@ -3,7 +3,6 @@ from src.utils.utils import EvasionAlgorithmsNames
 import logging
 import hydra
 import yaml
-from omegaconf import DictConfig
 from src.baselines.random import RandomHiding
 from src.baselines.degree import DegreeHiding
 from src.baselines.betweenness import CentralityHiding
@@ -11,6 +10,7 @@ from src.baselines.roam import RoamHiding
 from src.baselines.dice import DiceHiding
 from time import time
 import json
+from omegaconf import DictConfig
 from hydra.core.hydra_config import HydraConfig
 
 # ------ EVASION OPTIONS ------ #

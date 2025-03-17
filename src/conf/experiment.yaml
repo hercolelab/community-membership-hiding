@@ -1,0 +1,17 @@
+evasion_attack_algs:
+- RAND
+- DEG
+- BETW
+- ROAM
+- DICE
+graphs:
+- KAR
+- WORDS
+community_detection_algs:
+- GRE
+- LOUV
+- WALK
+budget_multipliers:
+- 1
+similarity_thresholds:
+- 0.5

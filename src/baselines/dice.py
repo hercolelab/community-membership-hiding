@@ -93,7 +93,19 @@ class DiceHiding:
         # Get the nodes not in the target community and not neighbours of the target node
         extra_nodes: List[int] = [i for i in range(graph.vcount()) if i not in self.target_community and i not in self.graph.neighbors(self.target_node)]
         if len(extra_nodes) == 0:
-            raise ValueError("There are no nodes outside the target community")
+            # If there are no inter_nodes, we continue removing intra-edges until the budget is exhausted
+            while (len(sorted_intra_neighbours) > 0 and steps < self.budget):
+                intra_neighbour_of_choice: int = self.target_community[sorted_intra_neighbours.pop(0)]
+                edge: Tuple[int,int] = (self.target_node, intra_neighbour_of_choice)
+                if graph.are_connected(*edge):
+                    graph.delete_edges([edge])
+                    changes["remove"].append(edge)
+                elif graph.are_connected(*edge[::-1]):
+                    graph.delete_edges([edge[::-1]])
+                    changes["remove"].append(edge[::-1])
+                steps += 1
+            return graph, steps, changes
+                
         sorted_extra_nodes: List[int] = sorted(extra_nodes, key=lambda x: graph.degree(x), reverse=True)
         for _ in range(extra_changes):
             extra_node_of_choice: int = sorted_extra_nodes.pop(0)
