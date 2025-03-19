@@ -119,13 +119,15 @@ class GraphEnvironment(object):
         self.target_community_size: int = len(self.target_community)
         target_community: List[int] = self.target_community.copy()
         random.seed(self.seed)
-        random.shuffle(target_community)
-        self.list_target_nodes = target_community[:self.max_deceptions_for_community]
+        if len(target_community) < self.max_deceptions_for_community:
+            self.list_target_nodes = target_community
+        else: 
+            random.shuffle(target_community)
+            self.list_target_nodes = target_community[:self.max_deceptions_for_community]
 
     
     def change_target_node(
             self,
-            step: int,
             target_node: Optional[int]=None,
         ) -> None:
         """
@@ -133,8 +135,6 @@ class GraphEnvironment(object):
 
         Parameters
         ----------
-        step : int
-            Step of the episode, i.e. index in the list
         target_node : Optional[int], default=None
             Target node to be hidden from the community
         """
@@ -142,7 +142,7 @@ class GraphEnvironment(object):
         if target_node is not None:
             self.target_node = target_node
         else:
-            self.target_node = self.list_target_nodes[step]
+            self.target_node = self.list_target_nodes.pop()
 
     
     # ============================================================================= #

@@ -39,10 +39,10 @@ import logging
 # Suggested similarity threshold: [0.3,0.5,0.8]
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-graph_names = ["KAR","WORDS"]
+graph_names = ["KAR"]
 community_detection_algs = ["GRE", "LOUV", "WALK"]
 evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE"]  
-beta_factors = [1]
+beta_factors = [0.5,1,2]
 taus = [0.5]  
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #
@@ -85,7 +85,7 @@ def main(cfg:DictConfig) -> None:
                             log.info("COMMUNITY MEMBERSHIP HIDING") 
                             log.info("="*60)
                             log.info(f"Evading algorithms: {evasion_algs}")
-                            log.info(f"Budget multiplier: {beta_factor}")
+                            log.info(f"Budget multiplier: {env.budget_multiplier}")
                             log.info(f"Budget: {env.budget}")
                             log.info(f"Similarity threshold: {env.tau}")
                             log.info("="*60)

@@ -72,6 +72,8 @@ class CmhExperiment:
         self.env.tau = tau
         self.env.budget = self.env.get_budget()
         self.budget = self.env.budget
+        self.dir_path: str = HydraConfig.get().runtime.output_dir + f"/{self.env.graph_name_output}" + f"/{self.env.community_detection_alg_name_output}" + f"/tau_{self.env.tau}" + f"/betaFactor_{self.env.budget_multiplier}" + "/json_results/"
+        Utils.check_dir(self.dir_path)
 
 
     # ============================================================================= #
@@ -102,7 +104,7 @@ class CmhExperiment:
 
             for j in range(experiment_steps):
                 # Change target node within the target community
-                self.env.change_target_node(step=j)
+                self.env.change_target_node()
                 target_node = self.env.target_node
 
                 # Run the evasion algorithms
