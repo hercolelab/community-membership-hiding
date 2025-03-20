@@ -6,9 +6,7 @@ import igraph as ig
 import numpy as np
 import cdlib
 import random
-import time
 import torch
-import copy
 import logging
 
 log = logging.getLogger(__name__)
@@ -19,10 +17,9 @@ class GraphEnvironment(object):
             self, 
             graph_name: str,
             community_detection_alg: str,
-            target_node: Optional[int] = 0,
-            budget_multiplier: Optional[int] = 1,
-            similarity_threshold: Optional[float] = 0.5
-    ) -> None:
+            target_node: int = 0,
+            budget_multiplier: int = 1,
+            similarity_threshold: float = 0.5) -> None:
         """
         Initialize the Graph Environment object
 
@@ -39,8 +36,8 @@ class GraphEnvironment(object):
         similarity_threshold : Optional[float], default=0.5
             The similarity threshold   
         """
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.seed = ExperimentHyps.seed
+        self.device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.seed: int = ExperimentHyps.seed.value
 
         # ------ GRAPH ------ #
         # Graph name
@@ -89,8 +86,8 @@ class GraphEnvironment(object):
 
         # ----- GRAPH FEATURES ------ #
         # We compute some features for the graph, which are used by some methods
-        self.graph_degrees = self.original_graph.degree()
-        self.graph_betweenness = self.original_graph.betweenness()
+        self.graph_degrees: List[int] = self.original_graph.degree()
+        self.graph_betweenness: List[float] = self.original_graph.betweenness()
 
 
         # ------ ENVIRONMENT INFO ------ #
@@ -103,9 +100,7 @@ class GraphEnvironment(object):
     #                           EPISODE RESET FUNCTIONS                             #
     # ============================================================================= #
 
-    def change_target_community(
-            self,
-            ) -> None:
+    def change_target_community(self) -> None:
         """
         Change the target community according to preferred sizes.
         """
@@ -126,10 +121,7 @@ class GraphEnvironment(object):
             self.list_target_nodes = target_community[:self.max_deceptions_for_community]
 
     
-    def change_target_node(
-            self,
-            target_node: Optional[int]=None,
-        ) -> None:
+    def change_target_node(self, target_node: Optional[int]=None) -> None:
         """
         Change the target node manually or according to community_target_nodes
 
@@ -177,7 +169,7 @@ class GraphEnvironment(object):
         If the division result is less than 3, we consider |E|/|V| + 1.
         """
         mu = self.original_graph.ecount() // self.original_graph.vcount()
-        if mu < 2:
+        if mu <= 2:
             return mu + 1
         return mu
     
@@ -193,10 +185,7 @@ class GraphEnvironment(object):
         budget: int = int(self.get_average_budget() * self.budget_multiplier)
         return budget
 
-    def get_community(
-        self,
-        new_community_structure: List[List[int]]
-    ) -> List[int]:
+    def get_community(self, new_community_structure: List[List[int]]) -> List[int]:
         """
         Search the community target in the new community structure after changes. 
 
@@ -251,8 +240,7 @@ class GraphEnvironment(object):
         
     def get_metrics(
         self,
-        cf_graph: ig.Graph,
-    ) -> Tuple[int,float]:
+        cf_graph: ig.Graph,) -> Tuple[int,float]:
         
         """
         Compute the goal and NMI metrics.

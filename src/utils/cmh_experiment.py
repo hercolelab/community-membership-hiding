@@ -1,22 +1,14 @@
-from src.utils.utils import ExperimentHyps, Utils, FilePaths
+from src.utils.utils import ExperimentHyps, Utils
 from src.graph_environment.env import GraphEnvironment
 from src.utils.utils import EvasionAlgorithmsNames
-from omegaconf import DictConfig
 from src.baselines.random import RandomHiding
 from src.baselines.degree import DegreeHiding
 from src.baselines.betweenness import CentralityHiding
 from src.baselines.roam import RoamHiding
 from src.baselines.dice import DiceHiding
-from typing import List, Callable, Tuple
-from omegaconf import DictConfig
-from tqdm import trange
-import multiprocessing
-import igraph as ig
-import copy
-import random
+from src.methods.nabla_cmh.nabla_cmh import nablaCMH
+from typing import List, Optional
 import logging
-import hydra
-import yaml
 from time import time
 import json
 from hydra.core.hydra_config import HydraConfig
@@ -58,14 +50,16 @@ class CmhExperiment:
     # ============================================================================= #
         
 
-    def set_parameters(
-            self,
-            beta_factor:float,
-            tau:float,
-        )-> None:
-
+    def set_parameters(self, beta_factor:float, tau:float)-> None:
         """
-        Set the parameters of the CMH problem
+        Set the parameters of the CMH problem on the environment.
+
+        Parameters
+        ----------
+        beta_factor: float
+            Budget multiplier.
+        tau: float
+            Similarity threshold.
         """
         
         self.env.budget_multiplier = beta_factor
@@ -119,22 +113,39 @@ class CmhExperiment:
                         evasion_alg = RoamHiding(self.env, target_node, self.budget)
                     elif alg == EvasionAlgorithmsNames.DICE.name:
                         evasion_alg = DiceHiding(self.env, target_node, self.budget)
+                    elif alg == EvasionAlgorithmsNames.NABLA.name:
+                        evasion_alg = nablaCMH(self.env, target_node, self.env.budget)
                     else:
                         raise ValueError("Invalid evasion attack algorithm")
                     
                     log.info(f"{i+1}-st Community size: {self.env.target_community_size} | Testing episode {j+1} |  Evasion algorithm: {alg}")
                     
+                    # Set the hiding function
+                    if alg == EvasionAlgorithmsNames.NABLA.name:
+                        func_call = lambda: evasion_alg.community_membership_hiding(verbose_iterations=True)  
+                    else:
+                        func_call = lambda: evasion_alg.community_membership_hiding()
+                    
                     # Counterfactual graph
                     start = time()
-                    new_graph, steps, changes = evasion_alg.community_membership_hiding()
+                    result = func_call()
                     end = time()
                     total_time = end - start
+
+                    # Unpack variables based on algorithm type
+                    if alg == EvasionAlgorithmsNames.NABLA.name:
+                        new_graph, steps, changes, add_results = result  # nabla-cmh returns an extra value
+                    else:
+                        new_graph, steps, changes = result
 
                     # Compute metrics
                     goal, nmi = self.env.get_metrics(new_graph)
 
                     # Save results
-                    self.save_results(alg, target_node, self.env.target_community_size, steps, changes, goal, nmi, total_time)
+                    if alg == EvasionAlgorithmsNames.NABLA.name:
+                        self.save_results(alg, target_node, self.env.target_community_size, steps, changes, goal, nmi, total_time, add_results)
+                    else:
+                        self.save_results(alg, target_node, self.env.target_community_size, steps, changes, goal, nmi, total_time, None)
 
 
     # ============================================================================= #
@@ -164,6 +175,15 @@ class CmhExperiment:
             }
             with open(self.dir_path + filename, "w") as json_file:
                 json.dump(results, json_file, indent=4)
+            # We add an additional json file for the additional results of the nabla-cmh algorithm (if any)    
+            if alg == EvasionAlgorithmsNames.NABLA.name:
+                filename_additional = f"{getattr(EvasionAlgorithmsNames, alg).value}_additional.json"
+                results_additional = {
+                    "hidings": []
+                }
+                with open(self.dir_path + filename_additional, "w") as json_file:
+                    json.dump(results_additional, json_file, indent=4)
+
     
     def save_results(
             self,
@@ -175,10 +195,29 @@ class CmhExperiment:
             goal : int,
             nmi: float,
             time: float,
-        ) -> None:
+            additional_results: Optional[dict]) -> None:
 
         """
         Save the results of a single evasion algorithm in a json file.
+
+        Parameters
+        ----------
+        alg: str
+            Name of the evasion algorithm.
+        target_node: int
+            Target node to hide.
+        target_community_size: int
+            Size of the target community.
+        steps: int
+            Number of steps done to reach the goal.
+        changes: dict
+            Changes done to the graph.
+        goal: int
+            Goal reached by the evasion algorithm.
+        nmi: float
+            Normalized Mutual Information between the original and the counterfactual community structure.
+        time: float
+            Time to run the evasion algorithm.
         """
 
         filename: str = f"{getattr(EvasionAlgorithmsNames, alg).value}.json"
@@ -192,9 +231,16 @@ class CmhExperiment:
         results["goal"].append(goal)
         results["nmi"].append(nmi)
         results["time"].append(time)
-
         with open(self.dir_path + filename, "w") as json_file:
             json.dump(results, json_file, indent=4)
+        
+        if additional_results is not None:
+            filename_additional: str = f"{getattr(EvasionAlgorithmsNames, alg).value}_additional.json"
+            with open(self.dir_path + filename_additional, "r") as json_file:
+                results_additional = json.load(json_file)
+            results_additional["hidings"].append(additional_results)
+            with open(self.dir_path + filename_additional, "w") as json_file:
+                json.dump(results_additional, json_file, indent=4)
         
 
         

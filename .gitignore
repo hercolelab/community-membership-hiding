@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Pippo script for toy check
+pippo.py
+
 # MacOS
 .DS_Store
 

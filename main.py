@@ -1,5 +1,4 @@
 from src.graph_environment.env import GraphEnvironment
-from src.utils.utils import ExperimentHyps, EvasionAlgorithmsNames
 from src.utils.cmh_experiment import CmhExperiment
 from omegaconf import DictConfig
 import hydra
@@ -31,7 +30,7 @@ import logging
 # - BETW (betweenness),
 # - ROAM (roam),
 # - DICE (dice),
-# - NABLA (nabla-cmh), # not for now
+# - NABLA (nabla-cmh), 
 # - DRL (drl-agent),   # not for now
 # - GRE (greedy)       # not for now
 #
@@ -41,7 +40,7 @@ import logging
 # ------ EXPERIMENTS CONFIGURATION ------ #
 graph_names = ["KAR"]
 community_detection_algs = ["GRE", "LOUV", "WALK"]
-evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE"]  
+evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA"]  
 beta_factors = [0.5,1,2]
 taus = [0.5]  
 

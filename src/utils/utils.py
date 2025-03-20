@@ -1,17 +1,8 @@
 from enum import Enum
-from typing import List, Tuple
-from statistics import mean, stdev
-import matplotlib.pyplot as plt
+from typing import List
 import igraph as ig
-import numpy as np
-import pandas as pd
 import random
-import seaborn as sns
-import scipy.io
-import json
 import os
-import math
-import cdlib
 
 
 class FilePaths(Enum):
@@ -134,7 +125,7 @@ class Utils:
         return graph
 
     @staticmethod
-    def check_dir(path: str):
+    def check_dir(path: str) -> None:
         """
         Check if the directory exists, if not create it.
 

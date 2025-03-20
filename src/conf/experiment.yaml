@@ -4,6 +4,7 @@ evasion_attack_algs:
 - BETW
 - ROAM
 - DICE
+- NABLA
 graphs:
 - KAR
 community_detection_algs:

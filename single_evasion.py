@@ -8,6 +8,7 @@ from src.baselines.degree import DegreeHiding
 from src.baselines.betweenness import CentralityHiding
 from src.baselines.roam import RoamHiding
 from src.baselines.dice import DiceHiding
+from src.methods.nabla_cmh.nabla_cmh import nablaCMH
 from time import time
 import json
 from omegaconf import DictConfig
@@ -38,7 +39,7 @@ from hydra.core.hydra_config import HydraConfig
 # - BETW (betweenness),
 # - ROAM (roam),
 # - DICE (dice),
-# - NABLA (nabla-cmh), # not for now
+# - NABLA (nabla-cmh), 
 # - DRL (drl-agent),   # not for now
 # - GRE (greedy)       # not for now
 #
@@ -49,8 +50,8 @@ from hydra.core.hydra_config import HydraConfig
 # ------ ATTACK CONFIGURATION ------ #
 graph_name = "KAR"
 community_detection_alg = "GRE"
-evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE"]
-#evasion_attack_algs = ["DICE"]
+#evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE"]
+evasion_attack_algs = ["NABLA"]
 target_node = 22
 budget_multiplier = 1
 similarity_threshold = 0.5
@@ -103,6 +104,7 @@ def main(cfg: DictConfig) -> None:
     log.info(f"Similarity threshold: {similarity_threshold}")
 
     for alg in evasion_attack_algs:
+        # Set the evasion attack algorithm
         if alg == EvasionAlgorithmsNames.RAND.name:
             evasion_alg = RandomHiding(env, target_node, env.budget)
         elif alg == EvasionAlgorithmsNames.DEG.name:
@@ -113,14 +115,28 @@ def main(cfg: DictConfig) -> None:
             evasion_alg = RoamHiding(env, target_node, env.budget)
         elif alg == EvasionAlgorithmsNames.DICE.name:
             evasion_alg = DiceHiding(env, target_node, env.budget)
+        elif alg == EvasionAlgorithmsNames.NABLA.name:
+            evasion_alg = nablaCMH(env, target_node, env.budget)
         else:
             raise ValueError("Invalid evasion attack algorithm")
-    
+        
+        # Set the hiding function
+        if alg == EvasionAlgorithmsNames.NABLA.name:
+            func_call = lambda: evasion_alg.community_membership_hiding(verbose_iterations=True)  
+        else:
+            func_call = lambda: evasion_alg.community_membership_hiding()  
+
         # Counterfactual graph
         start = time()
-        new_graph, steps, changes = evasion_alg.community_membership_hiding()
+        result = func_call()
         end = time()
         total_time = end - start
+
+        # Unpack variables based on algorithm type
+        if alg == EvasionAlgorithmsNames.NABLA.name:
+            new_graph, steps, changes, add_results = result  # nabla-cmh returns an extra value
+        else:
+            new_graph, steps, changes = result  
 
         # Compute metrics
         goal, nmi = env.get_metrics(new_graph)
@@ -133,6 +149,9 @@ def main(cfg: DictConfig) -> None:
             "nmi": nmi,
             "time": total_time
         }
+        if alg == EvasionAlgorithmsNames.NABLA.name:
+            results[getattr(EvasionAlgorithmsNames,alg).value]["additional_results"] = add_results
+            
         log.info("="*60)
         log.info(f"Results for {getattr(EvasionAlgorithmsNames,alg).value} evasion attack")
         log.info("="*60)
@@ -151,8 +170,8 @@ def main(cfg: DictConfig) -> None:
         json.dump(results, json_file, indent=4)
 
     #test changes 
-    #log.info(f"Old Neighboors of {target_node}: {env.original_graph.neighbors(target_node)}")
-    #log.info(f"New Neighboors of {target_node}: {new_graph.neighbors(target_node)}")
+    log.info(f"Old Neighboors of {target_node}: {env.original_graph.neighbors(target_node)}")
+    log.info(f"New Neighboors of {target_node}: {new_graph.neighbors(target_node)}")
 
 
 
