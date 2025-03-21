@@ -6,7 +6,6 @@ import cdlib
 import os
 import igraph as ig
 import random
-import louvain
 
 class CommunityDetectionAlg(object):
 	"""Class for the community detection algorithms using iGraph"""

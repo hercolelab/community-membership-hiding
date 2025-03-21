@@ -25,6 +25,7 @@ class CmhExperiment:
             self,
             evasion_algs: List[str],
             env: GraphEnvironment,
+            verbose: bool = True,
             )-> None:
         """
         Constructor of the class.
@@ -36,11 +37,14 @@ class CmhExperiment:
             
         env: GraphEnvironment
             Graph environment to evaluate the evasion algorithms.
+        verbose: bool
+            If True, print the results of the experiment.
         """
 
         self.evasion_algs: List[str] = evasion_algs
         self.env: GraphEnvironment = env
         self.budget: int = self.env.budget
+        self.verbose: bool = verbose
         self.dir_path: str = HydraConfig.get().runtime.output_dir + f"/{self.env.graph_name_output}" + f"/{self.env.community_detection_alg_name_output}" + f"/tau_{self.env.tau}" + f"/betaFactor_{self.env.budget_multiplier}" + "/json_results/"
         Utils.check_dir(self.dir_path)
 
@@ -118,11 +122,12 @@ class CmhExperiment:
                     else:
                         raise ValueError("Invalid evasion attack algorithm")
                     
-                    log.info(f"{i+1}-st Community size: {self.env.target_community_size} | Testing episode {j+1} |  Evasion algorithm: {alg}")
+                    if self.verbose:
+                        log.info(f"{i+1}-st Community size: {self.env.target_community_size} | Testing episode {j+1} |  Evasion algorithm: {alg}")
                     
                     # Set the hiding function
                     if alg == EvasionAlgorithmsNames.NABLA.name:
-                        func_call = lambda: evasion_alg.community_membership_hiding(verbose_iterations=True)  
+                        func_call = lambda: evasion_alg.community_membership_hiding(verbose_iterations=False)  
                     else:
                         func_call = lambda: evasion_alg.community_membership_hiding()
                     

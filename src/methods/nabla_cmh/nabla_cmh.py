@@ -1,7 +1,7 @@
 from src.graph_environment.env import GraphEnvironment
 from src.community_detection.algorithms import CommunityDetectionAlg
 from src.utils.utils import DetectionAlgorithmsNames
-from src.methods.nabla_cmh.config import get_hyperparams, get_promising_action_coeffs
+from src.methods.nabla_cmh.config import get_hyperparams
 from src.methods.nabla_cmh.nabla_utils import nablaUtils
 import igraph as ig
 from typing import List, Callable, Tuple, Optional
@@ -27,12 +27,7 @@ class nablaCMH():
         self.training_alg: str = "greedy"
 
         # Hyperparameters
-        self.promising_actions_coeffs = get_promising_action_coeffs(
-            dataset=self.env.graph_name_output,
-            train_alg=self.training_alg,
-            test_alg=self.env.community_detection_alg_name_output
-        )
-        self.T, self.lr, self.lambd = get_hyperparams(
+        self.T, self.lr, self.lambd, self.promising_actions_coeffs = get_hyperparams(
             dataset=self.env.graph_name_output,
             train_alg=self.training_alg,
             test_alg=self.env.community_detection_alg_name_output,
@@ -180,6 +175,8 @@ class nablaCMH():
                     break
 
         changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
+        
+        del x_hat, p_hat, p, a_new, history
 
         if verbose_iterations:
             nablaCMH_additional_results["count_reinit"] = count_reinit

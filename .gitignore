@@ -6,6 +6,8 @@ __pycache__/
 # Pippo script for toy check
 pippo.py
 
+config_old.py
+
 # MacOS
 .DS_Store
 
@@ -14,6 +16,9 @@ pippo.py
 
 #Hydra
 outputs/
+
+#Wandb
+wandb/
 
 # Distribution / packaging
 .Python
