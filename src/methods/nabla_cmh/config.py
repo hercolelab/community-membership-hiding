@@ -33,6 +33,35 @@ HYPERPARAMETERS = {
                 },
             },
         }
+    },
+
+    "words": {
+        "training_greedy": {
+            "testing_greedy": {
+                "promising_action_coeffs": [0.0004028761034536307, 0.053901189311128125, 0.08197490788515284, 0.8637210267002654],
+                "tau_0.5": {
+                    "betaFactor_0.5": {"T": 60, "lr": 0.0549, "lambd": 0.543},
+                    "betaFactor_1": {"T": 90, "lr": 0.012, "lambd": 0.827},
+                    "betaFactor_2": {"T": 50, "lr": 0.01, "lambd": 1.225}
+                }
+            },
+            "testing_louvain": {
+                "promising_action_coeffs": [0.0004028761034536307, 0.053901189311128125, 0.08197490788515284, 0.8637210267002654],
+                "tau_0.5": {
+                    "betaFactor_0.5": {"T": 60, "lr": 0.0681, "lambd": 0.5428},
+                    "betaFactor_1": {"T": 100, "lr": 0.0678, "lambd": 1.678},
+                    "betaFactor_2": {"T": 70, "lr": 0.169, "lambd": 1.318}
+                }
+            },
+            "testing_walktrap": {
+                "promising_action_coeffs": [0.0004028761034536307, 0.053901189311128125, 0.08197490788515284, 0.8637210267002654],
+                "tau_0.5": {
+                    "betaFactor_0.5": {"T": 90, "lr": 0.0827, "lambd": 0.456},
+                    "betaFactor_1": {"T": 70, "lr": 0.0482, "lambd": 0.556},
+                    "betaFactor_2": {"T": 90, "lr": 0.1817, "lambd": 1.18}
+                }
+            }
+        }
     }
 }
 

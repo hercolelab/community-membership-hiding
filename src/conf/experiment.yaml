@@ -1,12 +1,7 @@
 evasion_attack_algs:
-- RAND
-- DEG
-- BETW
-- ROAM
-- DICE
 - NABLA
 graphs:
-- KAR
+- WORDS
 community_detection_algs:
 - GRE
 - LOUV
