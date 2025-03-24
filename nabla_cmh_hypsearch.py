@@ -101,26 +101,26 @@ def exp(env: GraphEnvironment, save_path: str, wandb_cfg = None):
 # Suggested similarity threshold: [0.3,0.5,0.8]
 
 
-@hydra.main(config_path="src/conf", config_name="experiment", version_base=None)
+@hydra.main(config_path="src/conf", config_name="hyp_search", version_base=None)
 def main(cfg: DictConfig) -> None:
     
     save_path = HydraConfig.get().runtime.output_dir
 
     # ------ EXPERIMENTS CONFIGURATION ------ #
-    graph_name = "KAR"
-    alg = "GRE"
+    graph_name = "WORDS"
+    alg = "WALK"
     tau = 0.5
-    c_beta = 2
+    c_beta = 0.5
 
     # ------ UPDATE HYDRA CONFIG FILE ------ #
-    with open("src/conf/experiment.yaml", "r") as file:
+    with open("src/conf/hyp_search.yaml", "r") as file:
             cfg = yaml.safe_load(file)
     cfg["graphs"] = graph_name
     cfg["community_detection_algs"] = alg
     cfg["evasion_attack_algs"] = "NABLA"
     cfg["budget_multipliers"] = tau
     cfg["similarity_thresholds"] = c_beta
-    with open("src/conf/experiment.yaml", "w") as file:
+    with open("src/conf/hyp_search.yaml", "w") as file:
         yaml.dump(cfg, file, sort_keys=False)
 
     # ---- Environment Setup ---- #
@@ -138,8 +138,8 @@ def main(cfg: DictConfig) -> None:
         "metric": {"name": "f1", "goal": "maximize"},
         "parameters": {
             "max_it": {"values": list(range(50, 160,10))},
-            "lr": {"min": 0.001, "max": 0.5},
-            "lambd": {"min": 0.001, "max": 5.0},
+            "lr": {"min": 0.0001, "max": 0.2},
+            "lambd": {"min": 0.01, "max": 5.0},
             "dirichlet_seed": {"min": 0.0, "max": 1.0},
         },
     }

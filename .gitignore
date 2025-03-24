@@ -16,6 +16,7 @@ config_old.py
 
 #Hydra
 outputs/
+conf/
 
 #Wandb
 wandb/

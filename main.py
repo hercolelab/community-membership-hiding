@@ -38,13 +38,13 @@ import logging
 # Suggested similarity threshold: [0.3,0.5,0.8]
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-graph_names = ["KAR"]
-community_detection_algs = ["GRE", "LOUV", "WALK"]
-#community_detection_algs = ["LOUV"]
+graph_names = ["WORDS"]
+#community_detection_algs = ["GRE", "LOUV", "WALK"]
+community_detection_algs = ["WALK"]
 #evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA"]  
 evasion_algs = ["NABLA"]
-#beta_factors = [0.5,1,2]
-beta_factors = [1]
+beta_factors = [0.5,1,2]
+#beta_factors = [1]
 taus = [0.5]  
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #
