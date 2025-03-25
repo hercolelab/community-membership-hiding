@@ -107,7 +107,7 @@ def main(cfg: DictConfig) -> None:
     save_path = HydraConfig.get().runtime.output_dir
 
     # ------ EXPERIMENTS CONFIGURATION ------ #
-    graph_name = "WORDS"
+    graph_name = "POW"
     alg = "WALK"
     tau = 0.5
     c_beta = 0.5
@@ -138,8 +138,8 @@ def main(cfg: DictConfig) -> None:
         "metric": {"name": "f1", "goal": "maximize"},
         "parameters": {
             "max_it": {"values": list(range(50, 160,10))},
-            "lr": {"min": 0.0001, "max": 0.2},
-            "lambd": {"min": 0.01, "max": 5.0},
+            "lr": {"min": 0.0001, "max": 0.01},
+            "lambd": {"min": 1.0, "max": 25.0},
             "dirichlet_seed": {"min": 0.0, "max": 1.0},
         },
     }

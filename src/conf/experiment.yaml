@@ -1,8 +1,14 @@
 evasion_attack_algs:
-- NABLA
+- RAND
+- DEG
+- BETW
+- ROAM
+- DICE
 graphs:
-- WORDS
+- FB_75
 community_detection_algs:
+- GRE
+- LOUV
 - WALK
 budget_multipliers:
 - 0.5
