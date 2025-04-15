@@ -45,8 +45,8 @@ class GraphEnvironment(object):
         self.graph_name_output: str = getattr(DatasetNames, self.graph_name).value
         self.graph_name_full: str = getattr(DatasetFullNames, self.graph_name).value
         # Graph objects
-        self.graph_agent: ig.Graph = None # Graph object for the agent, characterized by random features for the nodes embeddings
         self.original_graph: ig.Graph = None
+        self.agent_graph: ig.Graph = None # Graph object for the agent, characterized by random features for the nodes embeddings 
         self.old_graph: ig.Graph = None # Graph before the last action, used by some methods to compute distances between graphs
         # Set the graph
         self.set_graph()
@@ -158,13 +158,23 @@ class GraphEnvironment(object):
         """Set the igraph.Graph object in the environment"""
         
         self.original_graph = Utils.import_graph(getattr(FilePaths, self.graph_name).value)
-        self.original_graph = self.set_node_features(self.original_graph)
-        #self.graph_agent = self.set_graph_agent()
+        self.agent_graph = self.set_node_features(self.original_graph)
 
-    def set_node_features(self, graph: ig.Graph) -> None:
+    def set_node_features(self, original_graph: ig.Graph) -> None:
         """
         Set the node features in the graph
+
+        Parameters
+        ----------
+        original_graph : ig.Graph
+            The original graph
+
+        Returns
+        -------
+        ig.Graph
+            The graph with the node features
         """
+        graph = original_graph.copy()
         for v in graph.vs:
             v["x"] = torch.rand(DRL_agentHyps.EMBEDDING_DIM.value)
         for e in graph.es:

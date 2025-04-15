@@ -252,6 +252,9 @@ class Utils:
                             # Convert the goal column to percentage
                             if metric == "goal":
                                 df[metric.capitalize()] = df[metric.capitalize()] * 100
+                            # Convert the budget column to percentage
+                            if metric == "steps":
+                                df[metric.capitalize()] = df[metric.capitalize()] * 100
                             
                             # Store metric data for JSON
                             metrics_data[metric] = df.set_index("Algorithm").to_dict()[metric.capitalize()]

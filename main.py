@@ -43,14 +43,18 @@ Suggested Parameters:
 """
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-graph_names = ["KAR","WORDS"]
+graph_names = ["KAR"]
+
 community_detection_algs = ["GRE", "LOUV", "WALK"]
 #community_detection_algs = ["WALK"]
-evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA"] 
-#evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE"]  
-#evasion_algs = ["NABLA"]
-beta_factors = [0.5,1,2]
-#beta_factors = [1]
+
+evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 
+#evasion_algs = ["DRL"]
+
+#beta_factors = [0.5,1,2]
+beta_factors = [1]
+
+#taus = [0.3, 0.5, 0.8]
 taus = [0.5]  
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #
@@ -65,6 +69,7 @@ with open("src/conf/experiment.yaml", "w") as file:
     yaml.dump(cfg, file, sort_keys=False)
 
 
+# ------ MAIN FUNCTION ------ #
 log = logging.getLogger(__name__)
 @hydra.main(config_path="src/conf", config_name="experiment", version_base=None)
 def main(cfg:DictConfig) -> None:

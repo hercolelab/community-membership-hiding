@@ -1,4 +1,4 @@
-from src.utils.utils import ExperimentHyps, Utils
+from src.utils.utils import ExperimentHyps, Utils, DRL_agentHyps, FilePaths
 from src.graph_environment.env import GraphEnvironment
 from src.utils.utils import EvasionAlgorithmsNames
 from src.baselines.random import RandomHiding
@@ -7,6 +7,7 @@ from src.baselines.betweenness import CentralityHiding
 from src.baselines.roam import RoamHiding
 from src.baselines.dice import DiceHiding
 from src.methods.nabla_cmh.nabla_cmh import nablaCMH
+from src.methods.drl_agent.agent import Agent
 from typing import List, Optional
 import logging
 from time import time
@@ -140,12 +141,23 @@ class CmhExperiment:
                             evasion_alg = DiceHiding(self.env, target_node, self.budget)
                         elif alg == EvasionAlgorithmsNames.NABLA.name:
                             evasion_alg = nablaCMH(self.env, target_node, self.env.budget)
+                        elif alg == EvasionAlgorithmsNames.DRL.name:
+                            evasion_alg = Agent(
+                                env=self.env,
+                            )
                         else:
                             raise ValueError("Invalid evasion attack algorithm")
                         
                         # Set the hiding function
-                        if alg == EvasionAlgorithmsNames.NABLA.name:
-                            func_call = lambda: evasion_alg.community_membership_hiding()  
+                        if alg == EvasionAlgorithmsNames.DRL.name:
+                            func_call = lambda: evasion_alg.test(
+                                lr=DRL_agentHyps.LR_EVAL.value,
+                                gamma=DRL_agentHyps.GAMMA_EVAL.value,
+                                lambda_metric=DRL_agentHyps.LAMBDA_EVAL.value,
+                                alpha_metric=DRL_agentHyps.ALPHA_EVAL.value,
+                                epsilon_prob=DRL_agentHyps.EPSILON_EVAL.value,
+                                model_path=FilePaths.TRAINED_MODEL.value,
+                            )  
                         else:
                             func_call = lambda: evasion_alg.community_membership_hiding()
                         

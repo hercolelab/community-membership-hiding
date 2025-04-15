@@ -55,11 +55,7 @@ class DegreeHiding:
         graph: ig.Graph = self.graph.copy()
         possible_actions: List[Tuple[int,int]] = copy.copy(self.possible_actions)
         possible_actions.sort(key=lambda x: x[1], reverse=True)
-        changes: dict = { 
-            "remove": [],
-            "add": [],
-        }
-
+        changes: dict = { "remove": [], "add": []}
         steps: int = 0
                 
         # Evasion attack
