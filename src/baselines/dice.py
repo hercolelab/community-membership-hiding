@@ -30,7 +30,7 @@ class DiceHiding:
         self.graph: ig.Graph = self.env.original_graph
         self.budget: int = budget
         self.target_node: int = target_node
-        self.target_community: List[int] = env.target_community
+        self.target_community: List[int] = env.nabla_cmh_target_community
         self.dice_coefficient: float = dice_coefficient
     
 

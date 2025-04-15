@@ -1,6 +1,6 @@
 from src.community_detection.algorithms import CommunityDetectionAlg
 from src.community_detection.similarity_functions import CommunitySimilarity
-from src.utils.utils import Utils, FilePaths, DatasetNames, DatasetFullNames, DetectionAlgorithmsNames, ExperimentHyps
+from src.utils.utils import Utils, FilePaths, DatasetNames, DatasetFullNames, DetectionAlgorithmsNames, ExperimentHyps, DRL_agentHyps
 from typing import List, Tuple, Callable, Optional
 import igraph as ig
 import numpy as np
@@ -16,7 +16,7 @@ class GraphEnvironment(object):
     def __init__(
             self, 
             graph_name: str,
-            community_detection_alg: str,
+            community_detection_algs: List[str],
             target_node: int = 0,
             budget_multiplier: int = 1,
             similarity_threshold: float = 0.5) -> None:
@@ -56,8 +56,9 @@ class GraphEnvironment(object):
         self.target_node: int = target_node
         self.list_target_nodes: List[int] = None # for the CMH experiment
         # Target community
-        self.target_community: List[int] = None
+        self.target_communities: List[List[int]] = None
         self.target_community_size: int = None
+        #self.target_community_sizes: List[int] = None
         self.preferred_community_size: float = ExperimentHyps.target_community_size.value[0]
         self.max_deceptions_for_community: int = ExperimentHyps.max_steps_community_eval.value
         # Budget
@@ -68,13 +69,17 @@ class GraphEnvironment(object):
         
          # ------ COMMUNITY DETECTION ------ #
         # Community detection algorithm
-        self.community_detection_alg_name: str = community_detection_alg
-        self.community_detection_alg_name_output: str = getattr(DetectionAlgorithmsNames, self.community_detection_alg_name).value
-        self.community_detection_alg: CommunityDetectionAlg = None
+        self.community_detection_alg_names: List[str] = community_detection_algs
+        self.community_detection_alg_names_output: List[str] = [
+            getattr(DetectionAlgorithmsNames, alg_name).value for alg_name in self.community_detection_alg_names
+        ]
+        self.community_detection_algs: List[CommunityDetectionAlg] = None
+        self.nabla_cmh_alg: CommunityDetectionAlg = None # Community detection algorithm used by the nabla_cmh method
         # Communities
-        self.original_communities: cdlib.NodeClustering = None
-        self.old_communities: cdlib.NodeClustering = None # Communities before the last action, used by some methods to compute distances between communities
-        self.new_communities: cdlib.NodeClustering = None
+        self.original_communities: List[cdlib.NodeClustering] = None
+        self.old_communities: List[cdlib.NodeClustering] = None # Communities before the last action, used by some methods to compute distances between communities
+        self.new_communities: List[cdlib.NodeClustering] = None
+        self.nabla_cmh_target_community: List[int] = None # Community used by the nabla_cmh method (also by DICE)
         # Set the community detection algorithm and the communities
         self.set_communities()     
 
@@ -104,15 +109,14 @@ class GraphEnvironment(object):
         """
         Change the target community according to preferred sizes.
         """
-        communities: List[int] = self.original_communities.communities
+        communities: List[int] = self.original_communities[0].communities
         communities_lenghts: List[int] = [len(c) for c in communities]
         preferred_size: int = int(
             np.ceil(max(communities_lenghts) * self.preferred_community_size)
         )
         closest: int = min(communities_lenghts, key=lambda x: abs(x - preferred_size))
-        self.target_community: List[int] = communities[communities_lenghts.index(closest)]
-        self.target_community_size: int = len(self.target_community)
-        target_community: List[int] = self.target_community.copy()
+        target_community: List[int] = communities[communities_lenghts.index(closest)].copy()
+        self.target_community_size: int = len(target_community)
         random.seed(self.seed)
         if len(target_community) < self.max_deceptions_for_community:
             self.list_target_nodes = target_community
@@ -135,6 +139,15 @@ class GraphEnvironment(object):
             self.target_node = target_node
         else:
             self.target_node = self.list_target_nodes.pop()
+        
+        # Since we use the community structure of just one algorithm for node sampling
+        # we need to update target communities for all algorithms if the target node is not in the previous target community
+        for i in range(len(self.target_communities)):
+            if self.target_node not in self.target_communities[i]:
+                self.target_communities[i] = self.get_community(self.original_communities[i])
+        if self.target_node not in self.nabla_cmh_target_community:
+            self.nabla_cmh_target_community = self.get_community(self.original_nabla_cmh_communities)
+
 
     
     # ============================================================================= #
@@ -146,16 +159,39 @@ class GraphEnvironment(object):
         """Set the igraph.Graph object in the environment"""
         
         self.original_graph = Utils.import_graph(getattr(FilePaths, self.graph_name).value)
+        self.original_graph = self.set_node_features(self.original_graph)
         #self.graph_agent = self.set_graph_agent()
+
+    def set_node_features(self, graph: ig.Graph) -> None:
+        """
+        Set the node features in the graph
+        """
+        for v in graph.vs:
+            v["x"] = torch.rand(DRL_agentHyps.EMBEDDING_DIM.value)
+        for e in graph.es:
+            if "weight" not in e.attributes():
+                # Add weight to the edges
+                e["weight"] = 1
+        return graph
 
     def set_communities(self) -> None:
         """Set the community detection algorithm class in the environment"""
 
-        self.community_detection_alg = CommunityDetectionAlg(self.community_detection_alg_name_output)
-        self.original_communities = self.community_detection_alg.community_detection(self.original_graph)
+        self.community_detection_algs = [
+            CommunityDetectionAlg(alg_name) for alg_name in self.community_detection_alg_names_output
+        ]
+        self.nabla_cmh_alg = CommunityDetectionAlg(getattr(DetectionAlgorithmsNames, "GRE").value)
+        self.original_communities = [
+            alg.community_detection(self.original_graph) for alg in self.community_detection_algs
+        ]
+        self.original_nabla_cmh_communities = self.nabla_cmh_alg.community_detection(self.original_graph)
         self.old_communities = self.original_communities
-        self.target_community = self.get_community(self.original_communities)
-        self.target_community_size = len(self.target_community)
+        self.target_communities = [
+            self.get_community(communities) for communities in self.original_communities
+        ]
+        self.nabla_cmh_target_community = self.get_community(self.original_nabla_cmh_communities)
+        self.target_community_size = len(self.target_communities[0])
+        #self.target_community_sizes = [len(community) for community in self.target_communities]
         
 
     # ============================================================================= #
@@ -187,12 +223,10 @@ class GraphEnvironment(object):
 
     def get_community(self, new_community_structure: List[List[int]]) -> List[int]:
         """
-        Search the community target in the new community structure after changes. 
+        Search the community target in the new community structure for self.target_node. 
 
         Parameters
         ----------
-        node_target : int
-            Target node to be hidden from the community
         new_community_structure : List[List[int]]
             New community structure after deception
 
@@ -206,7 +240,7 @@ class GraphEnvironment(object):
                 return community
         raise ValueError("Community not found")
     
-    def get_evasion_goal(self, new_community: List[int]) -> int:
+    def get_evasion_goal(self, new_community: List[int], alg_idx: Optional[int]) -> int:
         """
         Check if the goal of hiding the target node was achieved
 
@@ -226,7 +260,10 @@ class GraphEnvironment(object):
         # Copy the communities to avoid modifying the original ones
         new_community_copy = new_community.copy()
         new_community_copy.remove(self.target_node)
-        old_community_copy = self.target_community.copy()
+        if alg_idx is not None:
+            old_community_copy = self.target_communities[alg_idx].copy()
+        else:
+            old_community_copy = self.nabla_cmh_target_community.copy()
         old_community_copy.remove(self.target_node)
         # Compute the similarity between the new and the old community
         similarity = self.community_similarity(
@@ -238,18 +275,21 @@ class GraphEnvironment(object):
             return 1
         return 0
         
-    def get_metrics(
-        self,
-        cf_graph: ig.Graph,) -> Tuple[int,float]:
+    def get_metrics(self, cf_graph: ig.Graph,) -> Tuple[int,float]:
         
         """
         Compute the goal and NMI metrics.
         """
-        new_communities: cdlib.NodeClustering = self.community_detection_alg.community_detection(cf_graph)
-        new_community = self.get_community(new_communities)
-        goal: int = self.get_evasion_goal(new_community)
-        nmi: float = self.original_communities.normalized_mutual_information(new_communities).score
-        return goal, nmi
+        goals: List[int] = []
+        nmis: List[float] = []
+        for idx, alg in enumerate(self.community_detection_algs):
+            new_communities: cdlib.NodeClustering = alg.community_detection(cf_graph)
+            new_community = self.get_community(new_communities)
+            goal: int = self.get_evasion_goal(new_community, idx)
+            nmi: float = self.original_communities[idx].normalized_mutual_information(new_communities).score
+            goals.append(goal)
+            nmis.append(nmi)
+        return goals, nmis
 
 
     # ============================================================================= #
@@ -263,10 +303,10 @@ class GraphEnvironment(object):
         log.info("GRAPH ENVIRONMENT INFORMATIONS")
         log.info("="*60)
         log.info(f"Graph: {self.graph_name_output} -- {self.graph_name_full}")
-        log.info(f"Community Detection Algorithm: {self.community_detection_alg_name_output}")
+        log.info(f"Community Detection Algorithms: {self.community_detection_alg_names_output}")
         log.info(f"Number of nodes: {self.original_graph.vcount()}")
         log.info(f"Number of edges: {self.original_graph.ecount()}")
-        log.info(f"Number of communities: {len(self.original_communities.communities)}")
+        log.info(f"Number of communities: {[len(communities.communities) for communities in self.original_communities]}")
         #log.info(f"Communities: {self.original_communities}")
         log.info("="*60)
 

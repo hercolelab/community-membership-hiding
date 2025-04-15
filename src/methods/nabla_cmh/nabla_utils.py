@@ -45,9 +45,9 @@ class nablaUtils:
             Tensor containing the aggregated scores.
         """
 
-        communities: cdlib.NodeClustering = copy.deepcopy(env.original_communities)
+        communities: cdlib.NodeClustering = copy.deepcopy(env.original_communities[0])
         graph: ig.Graph = env.original_graph.copy()
-        target_community = env.target_community.copy()
+        target_community = env.nabla_cmh_target_community.copy()
 
         # ---- Centrality score ---- #
 

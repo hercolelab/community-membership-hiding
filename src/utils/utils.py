@@ -3,6 +3,13 @@ from typing import List
 import igraph as ig
 import random
 import os
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import json
+import pandas as pd
+from statistics import mean
+from hydra.core.hydra_config import HydraConfig
 
 
 class FilePaths(Enum):
@@ -22,7 +29,7 @@ class FilePaths(Enum):
     COND_MAT = DATASETS_DIR + "/cond-mat.txt"
 
     # Trained model path for testing (change the following line to change the model)
-    #TRAINED_MODEL = "src/models/steps-10000_words-gre_eps-0_model.pth"
+    TRAINED_MODEL = "src/methods/drl_agent/models/steps-10000_words-gre_eps-0_model.pth"
 
 class DatasetFullNames(Enum):
     """Enum class for the dataset names"""
@@ -69,6 +76,27 @@ class ExperimentHyps(Enum):
     seed: int = 22
     target_community_size: List[int] = [0.2,0.5,0.8]
     max_steps_community_eval: int = 100
+
+class DRL_agentHyps(Enum):
+    LAMBDA = [0.1]
+    ALPHA = [0.7]
+    EPSILON = [0]
+    EMBEDDING_DIM = 128  # 256
+    WALK_NUMBER = 5  # 5, 10
+    WALK_LENGTH = 40  # 40, 80
+    HIDDEN_SIZE_1 = 64
+    HIDDEN_SIZE_2 = 64
+    DROPOUT = 0.2
+    WEIGHT_DECAY = 1e-3
+    EPS_CLIP = np.finfo(np.float32).eps.item()  # 0.2
+    BEST_REWARD = -np.inf
+    LR = [7e-4]
+    GAMMA = [0.95]
+    LR_EVAL = 0.0001  # LR[0]
+    GAMMA_EVAL = 0.7  # GAMMA[0]
+    LAMBDA_EVAL = 0.1  # LAMBDA[0]
+    ALPHA_EVAL = 0.7  # ALPHA[0]
+    EPSILON_EVAL = 25  # EPSILON[0]
 
 class iGraphRNG:
     """
@@ -136,9 +164,143 @@ class Utils:
         """
         if not os.path.exists(path):
             os.makedirs(path)
+    
+    @staticmethod
+    def plot_metrics(
+        datasets: List[str],
+        evasion_algs: List[str],
+        detection_algs: List[str],
+        budget_factors: List[float],
+        taus: List[float],
+        metrics: List[str],
+    ) -> None:
+        """
+        Plot the metrics for the evasion algorithms.
 
-# ------ Example usage for the Enums ------ #
-#dataset = "KAR"
-#file_path = getattr(FilePaths, dataset).value
-#dataset_name = getattr(DatasetNames, dataset).value
-#print(f"File path for {dataset_name}: {file_path}")
+        Parameters
+        ----------
+        datasets : List[str]
+            List of datasets
+        evasion_algs : List[str]
+            List of evasion algorithms
+        detection_algs : List[str]
+            List of detection algorithms
+        budget_factors : List[float]
+            List of budget factors
+        taus : List[float]
+            List of tau values
+        metrics : List[str]
+            List of metrics
+        output_dir : str
+            Output directory
+        """
+
+        output_dir = HydraConfig.get().runtime.output_dir + "/"
+        plots_dir = "/plots/"
+        for dataset in datasets:
+            dataset_name = getattr(DatasetNames, dataset).value
+            for alg in detection_algs:
+                alg_name = getattr(DetectionAlgorithmsNames, alg).value
+                for tau in taus:
+                    for c_beta in budget_factors:
+
+                        # ----------------- Load the results ----------------- #
+                        results_dir = output_dir + f"{dataset_name}/{alg_name}/tau_{tau}/betaFactor_{c_beta}/json_results/"
+                        output_plots_dir = output_dir + f"{dataset_name}/{alg_name}/tau_{tau}/betaFactor_{c_beta}" + plots_dir
+                        Utils.check_dir(output_plots_dir)
+                        results = {}
+                        for evasion_alg in evasion_algs:
+                            evasion_alg_name = getattr(EvasionAlgorithmsNames, evasion_alg).value
+                            file_name = results_dir + f"{evasion_alg_name}.json"
+                            with open(file_name, "r", encoding="utf-8") as f:
+                                log = json.load(f)
+                            results[evasion_alg] = log
+                        budget = max(results[evasion_algs[0]]["steps"]) # for steps plot
+
+                        # ----------------- Store/compute metrics ----------------- #
+                        metrics_data = {}
+                        for metric in metrics:
+                            if metric == "f1":
+                                df = pd.DataFrame(
+                                    {
+                                        "Algorithm": evasion_algs,
+                                        metric.capitalize(): [
+                                            0 if (mean(results[alg]["goal"]) + mean(results[alg]["nmi"])) == 0 else 
+                                            2 * mean(results[alg]["goal"]) * mean(results[alg]["nmi"]) / 
+                                            (mean(results[alg]["goal"]) + mean(results[alg]["nmi"]))
+                                            for alg in evasion_algs
+                                        ],
+                                    }
+                                )
+                            elif metric == "steps":
+                                df = pd.DataFrame(
+                                    {
+                                        "Algorithm": evasion_algs,
+                                        metric.capitalize(): [
+                                            mean([results[alg][metric][i] for i in range(len(results[alg]["goal"])) if results[alg]["goal"][i] == 1])/budget 
+                                            if any(results[alg]["goal"][i] == 1 for i in range(len(results[alg]["goal"]))) else 0 
+                                            for alg in evasion_algs],
+                                    }
+                                )
+                            else:
+                                df = pd.DataFrame(
+                                    {
+                                        "Algorithm": evasion_algs,
+                                        metric.capitalize(): [mean(results[alg][metric]) for alg in evasion_algs],
+                                    }
+                                )
+                            # Convert the goal column to percentage
+                            if metric == "goal":
+                                df[metric.capitalize()] = df[metric.capitalize()] * 100
+                            
+                            # Store metric data for JSON
+                            metrics_data[metric] = df.set_index("Algorithm").to_dict()[metric.capitalize()]
+
+                            # ----------------- Plot ----------------- #
+                            if len(evasion_algs) > 1:
+                                sns.barplot(
+                                    data=df,
+                                    x="Algorithm",
+                                    y=metric.capitalize(),
+                                    hue="Algorithm",
+                                    palette=sns.color_palette("tab10"),
+                                    edgecolor="black",  
+                                    linewidth=0.5
+                                )
+                                plt.title(
+                                    f"Evaluation on {dataset_name} graph with {alg_name} algorithm"
+                                )
+                                plt.xlabel("Algorithm")
+                                if metric == "goal":
+                                    plt.ylabel(f"{metric.capitalize()} reached %")
+                                elif metric == "time":
+                                    plt.ylabel(f"{metric.capitalize()} (s)")
+                                elif metric == "steps":
+                                    plt.ylabel("Budget used % if goal reached")
+                                else:
+                                    plt.ylabel(metric.capitalize())
+                                file_path = output_plots_dir + f"{metric}.png"
+                                plt.savefig(file_path)
+                                plt.clf()
+
+                        # Save metrics data to JSON
+                        metrics_json_path = output_plots_dir + "metrics.json"
+                        with open(metrics_json_path, "w", encoding="utf-8") as json_file:
+                            json.dump(metrics_data, json_file, indent=4)
+
+                    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

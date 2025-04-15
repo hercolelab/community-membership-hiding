@@ -1,5 +1,6 @@
 from src.graph_environment.env import GraphEnvironment
 from src.utils.cmh_experiment import CmhExperiment
+from src.utils.utils import Utils
 from omegaconf import DictConfig
 import hydra
 import yaml
@@ -38,14 +39,14 @@ import logging
 # Suggested similarity threshold: [0.3,0.5,0.8]
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-graph_names = ["FB_75"]
+graph_names = ["WORDS"]
 community_detection_algs = ["GRE", "LOUV", "WALK"]
 #community_detection_algs = ["WALK"]
-#evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA"] 
-evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE"]  
+evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA"] 
+#evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE"]  
 #evasion_algs = ["NABLA"]
-beta_factors = [0.5,1,2]
-#beta_factors = [1]
+#beta_factors = [0.5,1,2]
+beta_factors = [1]
 taus = [0.5]  
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #
@@ -68,38 +69,49 @@ def main(cfg:DictConfig) -> None:
     
     
     for dataset in graph_names:
-        for community_detection_alg in community_detection_algs:
-                # Set the environment 
-                env = GraphEnvironment(
-                    dataset, 
-                    community_detection_alg,
-                )
-                # Create the CMH experiment
-                cmh_experiment = CmhExperiment(
-                    evasion_algs,
-                    env,
-                    verbose=False
-                )
-                for tau in taus:
-                        for beta_factor in beta_factors:
-                            # Set the parameters of the CMH problem
-                            cmh_experiment.set_parameters(beta_factor, tau) 
-                            # Print info
-                            log.info("="*60)
-                            log.info("COMMUNITY MEMBERSHIP HIDING") 
-                            log.info("="*60)
-                            log.info(f"Evading algorithms: {evasion_algs}")
-                            log.info(f"Budget multiplier: {env.budget_multiplier}")
-                            log.info(f"Budget: {env.budget}")
-                            log.info(f"Similarity threshold: {env.tau}")
-                            log.info("="*60)
-                            log.info("START EXPERIMENT") 
-                            log.info("="*60)
-                            # Run the experiment
-                            cmh_experiment.run_experiment()
-                log.info("="*60)
-                log.info("END EXPERIMENT") 
-                log.info("="*60)
+        # Set the environment 
+        env = GraphEnvironment(
+            dataset, 
+            community_detection_algs,
+        )
+        # Create the CMH experiment
+        cmh_experiment = CmhExperiment(
+            evasion_algs,
+            env,
+            verbose=False
+        )
+        for tau in taus:
+                for beta_factor in beta_factors:
+                    # Set the parameters of the CMH problem
+                    cmh_experiment.set_parameters(beta_factor, tau) 
+                    # Print info
+                    log.info("="*60)
+                    log.info("COMMUNITY MEMBERSHIP HIDING") 
+                    log.info("="*60)
+                    log.info(f"Evading algorithms: {evasion_algs}")
+                    log.info(f"Budget multiplier: {env.budget_multiplier}")
+                    log.info(f"Budget: {env.budget}")
+                    log.info(f"Similarity threshold: {env.tau}")
+                    log.info("="*60)
+                    log.info("START EXPERIMENT") 
+                    log.info("="*60)
+                    # Run the experiment
+                    cmh_experiment.run_experiment()
+        log.info("="*60)
+        log.info("END EXPERIMENT") 
+        log.info("="*60)
+
+    log.info("="*60)
+    log.info("Computing metrics and plots...") 
+    Utils.plot_metrics(
+        datasets=graph_names,
+        evasion_algs=evasion_algs,
+        detection_algs=community_detection_algs,
+        budget_factors=beta_factors,
+        taus=taus,
+        metrics = ["goal","nmi","f1","time","steps"],
+    )
+    log.info("="*60)
     log.info("="*60)
     log.info("END OF ALL EXPERIMENTS") 
     log.info("="*60)

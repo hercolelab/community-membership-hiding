@@ -30,7 +30,6 @@ class nablaCMH():
         self.T, self.lr, self.lambd, self.promising_actions_coeffs = get_hyperparams(
             dataset=self.env.graph_name_output,
             train_alg=self.training_alg,
-            test_alg=self.env.community_detection_alg_name_output,
             tau=self.env.tau,
             beta_factor=self.env.budget_multiplier
         )
@@ -125,7 +124,7 @@ class nablaCMH():
                         g_prime.add_edges([e])
                 new_communities = da_train.community_detection(g_prime)
                 new_community_u = self.env.get_community(new_communities)
-                goal = self.env.get_evasion_goal(new_community_u)
+                goal = self.env.get_evasion_goal(new_community_u, None)
                 n_changes = 0 #reset changes
             elif n_changes > 0 and (budget_used + n_changes > self.budget):
                 budget_used += n_changes
@@ -242,7 +241,7 @@ class nablaCMH():
 
         n = self.env.original_graph.vcount()
         L = torch.ones(n)
-        L_in = torch.LongTensor(self.env.target_community)
+        L_in = torch.LongTensor(self.env.nabla_cmh_target_community)
         L[L_in] = torch.Tensor([0])
         scores = torch.Tensor(nablaUtils.compute_promising_scores(self.env,self.promising_actions_coeffs))*0.5
         prom_actions = torch.where(L == 1, 0.5 + scores, 0.5 - scores)

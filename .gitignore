@@ -8,6 +8,9 @@ pippo.py
 
 config_old.py
 
+#VSCode
+.vscode/
+
 # MacOS
 .DS_Store
 
