@@ -12,7 +12,7 @@ import logging
 from time import time
 import json
 from hydra.core.hydra_config import HydraConfig
-
+from rich.progress import Progress
 
 log = logging.getLogger(__name__)
 class CmhExperiment:
@@ -25,7 +25,6 @@ class CmhExperiment:
             self,
             evasion_algs: List[str],
             env: GraphEnvironment,
-            verbose: bool = True,
             )-> None:
         """
         Constructor of the class.
@@ -37,19 +36,13 @@ class CmhExperiment:
             
         env: GraphEnvironment
             Graph environment to evaluate the evasion algorithms.
-        verbose: bool
-            If True, print the results of the experiment.
         """
 
         self.evasion_algs: List[str] = evasion_algs
         self.env: GraphEnvironment = env
         self.budget: int = self.env.budget
-        self.verbose: bool = verbose
-        self.dir_paths: List[str] = []
-        for detection_alg in self.env.community_detection_alg_names_output:
-            dir_path: str = HydraConfig.get().runtime.output_dir + f"/{self.env.graph_name_output}" + f"/{detection_alg}" + f"/tau_{self.env.tau}" + f"/betaFactor_{self.env.budget_multiplier}" + "/json_results/"
-            Utils.check_dir(dir_path)
-            self.dir_paths.append(dir_path)
+
+        
 
 
     # ============================================================================= #
@@ -73,6 +66,11 @@ class CmhExperiment:
         self.env.tau = tau
         self.env.budget = self.env.get_budget()
         self.budget = self.env.budget
+        self.dir_paths: List[str] = []
+        for detection_alg in self.env.community_detection_alg_names_output:
+            dir_path: str = HydraConfig.get().runtime.output_dir + f"/{self.env.graph_name_output}" + f"/{detection_alg}" + f"/tau_{self.env.tau}" + f"/betaFactor_{self.env.budget_multiplier}" + "/json_results/"
+            Utils.check_dir(dir_path)
+            self.dir_paths.append(dir_path)
         
 
 
@@ -95,64 +93,89 @@ class CmhExperiment:
         # Set the dictionaries to store results for each algorithm
         self.set_results_dict()
 
-        for i in range(len(preferred_sizes)):
-            # Set the preferred community size to the environment
-            self.env.preferred_community_size = preferred_sizes[i]
-            # Change the target community
-            self.env.change_target_community()
-            experiment_steps = len(self.env.list_target_nodes)
+        with Progress() as progress:
+            outer_task = progress.add_task("[cyan]Community Steps...", total=3)
+            inner_task = None
 
-            for j in range(experiment_steps):
-                # Change target node within the target community
-                self.env.change_target_node()
-                target_node = self.env.target_node
+            for i in range(len(preferred_sizes)):
 
-                # Run the evasion algorithms
-                for alg in self.evasion_algs:
-                    if alg == EvasionAlgorithmsNames.RAND.name:
-                        evasion_alg = RandomHiding(self.env, target_node, self.budget)
-                    elif alg == EvasionAlgorithmsNames.DEG.name:
-                        evasion_alg = DegreeHiding(self.env, target_node, self.budget)
-                    elif alg == EvasionAlgorithmsNames.BETW.name:
-                        evasion_alg = CentralityHiding(self.env, target_node, self.budget)
-                    elif alg == EvasionAlgorithmsNames.ROAM.name:
-                        evasion_alg = RoamHiding(self.env, target_node, self.budget)
-                    elif alg == EvasionAlgorithmsNames.DICE.name:
-                        evasion_alg = DiceHiding(self.env, target_node, self.budget)
-                    elif alg == EvasionAlgorithmsNames.NABLA.name:
-                        evasion_alg = nablaCMH(self.env, target_node, self.env.budget)
-                    else:
-                        raise ValueError("Invalid evasion attack algorithm")
+                progress.update(
+                    outer_task,
+                    description=f"[cyan] Community Step {i+1}/3"
+                )
+                # Set the preferred community size to the environment
+                self.env.preferred_community_size = preferred_sizes[i]
+                # Change the target community
+                self.env.change_target_community()
+                experiment_steps = len(self.env.list_target_nodes)
+                
+                inner_task = progress.add_task(
+                    f"[green]Processing Nodes for Community {i+1}...",
+                    total=experiment_steps
+                )   
+                for j in range(experiment_steps):
+                    # Change target node within the target community
+                    self.env.change_target_node()
+                    target_node = self.env.target_node
+                    progress.update(
+                        inner_task,
+                        description=f"[green] Node Step {j+1}/{experiment_steps}"
+                    )
+
+                    # Run the evasion algorithms
+                    for alg in self.evasion_algs:
+                        progress.update(
+                            inner_task,
+                            description=f"[green] Node Step {j+1}/{experiment_steps} - {alg.upper()}"
+                        )
+                        if alg == EvasionAlgorithmsNames.RAND.name:
+                            evasion_alg = RandomHiding(self.env, target_node, self.budget)
+                        elif alg == EvasionAlgorithmsNames.DEG.name:
+                            evasion_alg = DegreeHiding(self.env, target_node, self.budget)
+                        elif alg == EvasionAlgorithmsNames.BETW.name:
+                            evasion_alg = CentralityHiding(self.env, target_node, self.budget)
+                        elif alg == EvasionAlgorithmsNames.ROAM.name:
+                            evasion_alg = RoamHiding(self.env, target_node, self.budget)
+                        elif alg == EvasionAlgorithmsNames.DICE.name:
+                            evasion_alg = DiceHiding(self.env, target_node, self.budget)
+                        elif alg == EvasionAlgorithmsNames.NABLA.name:
+                            evasion_alg = nablaCMH(self.env, target_node, self.env.budget)
+                        else:
+                            raise ValueError("Invalid evasion attack algorithm")
+                        
+                        # Set the hiding function
+                        if alg == EvasionAlgorithmsNames.NABLA.name:
+                            func_call = lambda: evasion_alg.community_membership_hiding()  
+                        else:
+                            func_call = lambda: evasion_alg.community_membership_hiding()
+                        
+                        # Counterfactual graph
+                        start = time()
+                        result = func_call()
+                        end = time()
+                        total_time = end - start
+
+                        # Unpack variables based on algorithm type
+                        if alg == EvasionAlgorithmsNames.NABLA.name:
+                            new_graph, steps, changes, add_results = result  # nabla-cmh returns an extra value
+                        else:
+                            new_graph, steps, changes = result
+
+                        # Compute metrics
+                        goals, nmis = self.env.get_metrics(new_graph)
+
+                        # Save results
+                        if alg == EvasionAlgorithmsNames.NABLA.name:
+                            self.save_results(alg, target_node, steps, changes, goals, nmis, total_time, add_results)
+                        else:
+                            self.save_results(alg, target_node, steps, changes, goals, nmis, total_time, None)
                     
-                    if self.verbose:
-                        log.info(f"{i+1}-st Community size: {self.env.target_community_size} | Testing episode {j+1} |  Evasion algorithm: {alg}")
-                    
-                    # Set the hiding function
-                    if alg == EvasionAlgorithmsNames.NABLA.name:
-                        func_call = lambda: evasion_alg.community_membership_hiding(verbose_iterations=False)  
-                    else:
-                        func_call = lambda: evasion_alg.community_membership_hiding()
-                    
-                    # Counterfactual graph
-                    start = time()
-                    result = func_call()
-                    end = time()
-                    total_time = end - start
-
-                    # Unpack variables based on algorithm type
-                    if alg == EvasionAlgorithmsNames.NABLA.name:
-                        new_graph, steps, changes, add_results = result  # nabla-cmh returns an extra value
-                    else:
-                        new_graph, steps, changes = result
-
-                    # Compute metrics
-                    goals, nmis = self.env.get_metrics(new_graph)
-
-                    # Save results
-                    if alg == EvasionAlgorithmsNames.NABLA.name:
-                        self.save_results(alg, target_node, steps, changes, goals, nmis, total_time, add_results)
-                    else:
-                        self.save_results(alg, target_node, steps, changes, goals, nmis, total_time, None)
+                    progress.update(inner_task, advance=1)
+                progress.update(
+                    inner_task,
+                    description=f"[green] Node Step {j+1}/{experiment_steps}"
+                )
+                progress.update(outer_task, advance=1)
 
 
     # ============================================================================= #

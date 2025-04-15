@@ -14,44 +14,47 @@ import json
 from omegaconf import DictConfig
 from hydra.core.hydra_config import HydraConfig
 
+
+"""
 # ------ EVASION OPTIONS ------ #
-# For this script is allowed to use just a single dataset, budget and target node.
-# This script allows to run multiple evasion attack algorithms
-#
-# Available datasets: 
-# - KAR (0-33 nodes), 
-# - WORDS (0-111 nodes), 
-# - VOTE (0-888 nodes), 
-# - POW (0-4940 nodes), 
-# - FB_75 (0-6385 nodes), 
-# - COND_MAT (0-23132 nodes)
-#
-# Available community detection algorithms: 
-# - GRE (greedy), 
-# - INF (infomap), 
-# - LAB (label propagation), 
-# - LOUV (louvain), 
-# - WALK (walktrap)
-#
-# Available evasion attack algorithms:
-# - RAND (random),
-# - DEG (degree),
-# - BETW (betweenness),
-# - ROAM (roam),
-# - DICE (dice),
-# - NABLA (nabla-cmh), 
-# - DRL (drl-agent),   # not for now
-# - GRE (greedy)       # not for now
-#
-# Suggested budget multiplier: [0.5,1,2]
-# Suggested similarity threshold: [0.3,0.5,0.8]
+This script supports running multiple evasion attack algorithms on a single dataset, 
+with a specified budget and target node.
+
+Available Datasets:
+    - KAR:       0-33 nodes
+    - WORDS:     0-111 nodes
+    - VOTE:      0-888 nodes
+    - POW:       0-4940 nodes
+    - FB_75:     0-6385 nodes
+    - COND_MAT:  0-23132 nodes
+
+Available Community Detection Algorithms:
+    - GRE:  Greedy
+    - INF:  Infomap
+    - LAB:  Label Propagation
+    - LOUV: Louvain
+    - WALK: Walktrap
+
+Available Evasion Attack Algorithms:
+    - RAND:  Random
+    - DEG:   Degree
+    - BETW:  Betweenness
+    - ROAM:  Roam
+    - DICE:  Dice
+    - NABLA: Nabla-CMH
+    - DRL:   DRL-Agent (not supported yet)
+    - GRE:   Greedy (not supported yet)
+
+Suggested Parameters:
+- Budget Multipliers (beta factor): [0.5, 1, 2]
+- Similarity Thresholds (tau): [0.3, 0.5, 0.8]
+"""
 
 
 # ------ ATTACK CONFIGURATION ------ #
 graph_name = "KAR"
-community_detection_alg = "GRE"
-#evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE"]
-evasion_attack_algs = ["NABLA"]
+community_detection_alg = ["GRE", "LOUV", "WALK"]
+evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA"]
 target_node = 22
 budget_multiplier = 1
 similarity_threshold = 0.5
@@ -86,7 +89,7 @@ def main(cfg: DictConfig) -> None:
     # Results dictionary
     results = {
         "graph": env.graph_name_output,
-        "community_detection": env.community_detection_alg_name_output,
+        "community_detection": env.community_detection_alg_names_output,
         "target_node": target_node,
         "community_size": env.target_community_size,
         "budget_multiplier": budget_multiplier,

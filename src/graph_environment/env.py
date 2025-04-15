@@ -94,7 +94,6 @@ class GraphEnvironment(object):
         self.graph_degrees: List[int] = self.original_graph.degree()
         self.graph_betweenness: List[float] = self.original_graph.betweenness()
 
-
         # ------ ENVIRONMENT INFO ------ #
         self.print_environment_info()
 
@@ -299,16 +298,16 @@ class GraphEnvironment(object):
     def print_environment_info(self) -> None:
         """Print the environment info"""
 
-        log.info("="*60)
-        log.info("GRAPH ENVIRONMENT INFORMATIONS")
-        log.info("="*60)
-        log.info(f"Graph: {self.graph_name_output} -- {self.graph_name_full}")
-        log.info(f"Community Detection Algorithms: {self.community_detection_alg_names_output}")
-        log.info(f"Number of nodes: {self.original_graph.vcount()}")
-        log.info(f"Number of edges: {self.original_graph.ecount()}")
-        log.info(f"Number of communities: {[len(communities.communities) for communities in self.original_communities]}")
-        #log.info(f"Communities: {self.original_communities}")
-        log.info("="*60)
+        log.info("**********************************************")
+        log.info("========== ENVIRONMENT INFORMATIONS ==========")
+        log.info("**********************************************")
+        log.info(" ")
+        log.info("  • Graph name             : %s -- %s", self.graph_name_output, self.graph_name_full)
+        log.info("  • Detection algorithms   : %s", self.community_detection_alg_names_output)
+        log.info("  • Number of nodes        : %d", self.original_graph.vcount())
+        log.info("  • Number of edges        : %d", self.original_graph.ecount())
+        log.info("  • Number of communities  : %s", 
+                [len(communities.communities) for communities in self.original_communities])
 
 
 
