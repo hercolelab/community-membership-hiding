@@ -54,7 +54,8 @@ def exp(env: GraphEnvironment, save_path: str, wandb_cfg = None):
         log.info(f"Evader configuration: {evader_hyps[f'tau_{tau}'][f'betaFactor_{c_beta}']}")
 
         # Initialize the test class
-        experiment = CmhExperiment(evasion_algs=["NABLA"], env=env, verbose=False)
+        experiment = CmhExperiment(evasion_algs=["NABLA"], env=env)
+        experiment.set_parameters(c_beta, tau) 
         experiment.run_experiment()
 
         # Open the JSON file for wandb log
@@ -115,9 +116,9 @@ def main(cfg: DictConfig) -> None:
 
     # ------ EXPERIMENTS CONFIGURATION ------ #
     graph_name = "KAR"
-    alg = "GRE"
+    alg = ["GRE"]
     tau = 0.5
-    c_beta = 0.5
+    c_beta = 2
 
     # ------ UPDATE HYDRA CONFIG FILE ------ #
     with open("src/conf/hyp_search.yaml", "r") as file:
@@ -133,7 +134,7 @@ def main(cfg: DictConfig) -> None:
     # ---- Environment Setup ---- #
     env = GraphEnvironment(
         graph_name=graph_name,
-        community_detection_alg=alg,
+        community_detection_algs=alg,
         budget_multiplier=c_beta,
         similarity_threshold=tau,
     )
@@ -150,20 +151,20 @@ def main(cfg: DictConfig) -> None:
         "parameters": {
             # --- GD hyperparameters --- #
             "max_it": {
-                "distribution": "q_uniform",  # Campiona interi con step 10
+                "distribution": "q_uniform",  
                 "min": 50,
-                "max": 160,
+                "max": 150,
                 "q": 10
             },
             "lr": {
-                "distribution": "log_uniform",  # Scala logaritmica per learning rate
-                "min": 0.001,
-                "max": 0.05
+                "distribution": "log_uniform",  
+                "min": np.log(0.001),
+                "max": np.log(0.5)
             },
             "lambd": {
-                "distribution": "log_uniform",  # Scala logaritmica per regolarizzazione
-                "min": 0.01,
-                "max": 5.0
+                "distribution": "log_uniform",  
+                "min": np.log(0.01),
+                "max": np.log(5.0)
             },
             
             # --- Promising actions weights --- #
@@ -175,8 +176,8 @@ def main(cfg: DictConfig) -> None:
     }
 
 
-    sweep_id = wandb.sweep(sweep_config, project=f"NABLAcmh_search {graph_name} {alg} tau_{tau} beta_{c_beta}")
-    wandb.agent(sweep_id, function=lambda: exp(env,save_path), count=1000)
+    sweep_id = wandb.sweep(sweep_config, project=f"hyp_search {graph_name} {alg[0]} tau_{tau} beta_{c_beta}")
+    wandb.agent(sweep_id, function=lambda: exp(env,save_path), count=500)
 
 
 if __name__ == "__main__":

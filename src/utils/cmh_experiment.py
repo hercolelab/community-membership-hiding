@@ -42,6 +42,7 @@ class CmhExperiment:
         self.evasion_algs: List[str] = evasion_algs
         self.env: GraphEnvironment = env
         self.budget: int = self.env.budget
+        
 
         
 
