@@ -34,7 +34,7 @@ Available Evasion Attack Algorithms:
     - ROAM:  Roam
     - DICE:  Dice
     - NABLA: Nabla-CMH
-    - DRL:   DRL-Agent (not supported yet)
+    - DRL:   DRL-Agent     
     - GRE:   Greedy (not supported yet)
 
 Suggested Parameters:
@@ -51,8 +51,8 @@ community_detection_algs = ["GRE", "LOUV", "WALK"]
 evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 
 #evasion_algs = ["DRL"]
 
-#beta_factors = [0.5,1,2]
-beta_factors = [1]
+beta_factors = [0.5,1,2]
+#beta_factors = [1]
 
 #taus = [0.3, 0.5, 0.8]
 taus = [0.5]  

@@ -13,6 +13,8 @@ community_detection_algs:
 - LOUV
 - WALK
 budget_multipliers:
+- 0.5
 - 1
+- 2
 similarity_thresholds:
 - 0.5

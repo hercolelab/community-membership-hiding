@@ -11,10 +11,12 @@ import os
 import yaml
 import json
 import numpy as np
+from scipy.special import softmax
 
 log = logging.getLogger(__name__)
 
 
+# ------ EXPERIMENT FUNCTION ------ #
 def exp(env: GraphEnvironment, save_path: str, wandb_cfg = None):
     """"
     This function runs the experiment with the given configuration and saves the results.
@@ -34,25 +36,20 @@ def exp(env: GraphEnvironment, save_path: str, wandb_cfg = None):
     with wandb.init(config=wandb_cfg):
         wandb_cfg = wandb.config
         run_name = wandb.run.name
-        
-        log.info("Run name: {} - Dataset: {} - Detection Algorithm: {}".format(run_name,env.graph_name_output, env.community_detection_alg_name_output))
-        log.info(f"Output directory: {save_path}")
 
         # Problem Configuration
         dataset_name = env.graph_name_output
         train_alg = "greedy"
-        test_alg = env.community_detection_alg_name_output
         tau = env.tau
         c_beta = env.budget_multiplier
 
         #Candidate hyperparameters
-        evader_hyps = hyps[dataset_name][f"training_{train_alg}"][f"testing_{test_alg}"]
+        evader_hyps = hyps[dataset_name][f"training_{train_alg}"]
         evader_hyps[f"tau_{tau}"][f"betaFactor_{c_beta}"]["T"] = wandb_cfg.max_it
         evader_hyps[f"tau_{tau}"][f"betaFactor_{c_beta}"]["lr"] = wandb_cfg.lr
         evader_hyps[f"tau_{tau}"][f"betaFactor_{c_beta}"]["lambd"] = wandb_cfg.lambd
-        dirichlet_seed = wandb_cfg.dirichlet_seed
-        np.random.seed(int(dirichlet_seed*1e6))
-        coeffs = np.random.dirichlet([1, 1, 1, 1]).tolist()
+        raw_weights = np.array([wandb_cfg.p1, wandb_cfg.p2, wandb_cfg.p3, wandb_cfg.p4])
+        coeffs = softmax(raw_weights)
         evader_hyps[f"tau_{tau}"][f"betaFactor_{c_beta}"]["promising_action_coeffs"] = coeffs
         log.info(f"Evader configuration: {evader_hyps[f'tau_{tau}'][f'betaFactor_{c_beta}']}")
 
@@ -61,18 +58,28 @@ def exp(env: GraphEnvironment, save_path: str, wandb_cfg = None):
         experiment.run_experiment()
 
         # Open the JSON file for wandb log
-        evaluation_path = save_path + f"/{dataset_name}/{test_alg}/tau_{tau}/betaFactor_{c_beta}/json_results/nabla-cmh.json"
+        evaluation_path = save_path + f"/{dataset_name}/{train_alg}/tau_{tau}/betaFactor_{c_beta}/json_results/nabla-cmh.json"
         with open(evaluation_path, 'r') as eval_file:
             results = json.load(eval_file)
 
         #Compute the F1 score
-        f1_score = mean([0 if (results["goal"][i] + results["nmi"][i]) == 0 
-                 else 2 * (results["goal"][i] * results["nmi"][i]) / (results["goal"][i] + results["nmi"][i])
-                 for i in range(len(results["goal"]))])
+        goal_mean = mean(results["goal"])
+        nmi_mean = mean(results["nmi"])
+        if goal_mean + nmi_mean == 0:
+            f1_score = 0
+        else:
+            f1_score = 2 * goal_mean * nmi_mean / (goal_mean + nmi_mean)
         time = mean([results["time"][i] for i in range(len(results["time"]))])
+        steps = (
+            mean([results["steps"][i] for i in range(len(results["goal"])) if results["goal"][i] == 1]) / env.budget
+            if any(results["goal"][i] == 1 for i in range(len(results["goal"])))
+            else 0
+        )
         log.info(f"F1 score: {f1_score}")
+        log.info(f"Steps: {steps}")
         log.info(f"Time: {time}")
         wandb.log({"f1": f1_score})
+        wandb.log({"steps": steps})
         wandb.log({"time": time})
 
 
@@ -107,8 +114,8 @@ def main(cfg: DictConfig) -> None:
     save_path = HydraConfig.get().runtime.output_dir
 
     # ------ EXPERIMENTS CONFIGURATION ------ #
-    graph_name = "POW"
-    alg = "WALK"
+    graph_name = "KAR"
+    alg = "GRE"
     tau = 0.5
     c_beta = 0.5
 
@@ -133,18 +140,42 @@ def main(cfg: DictConfig) -> None:
 
     # ---- Search Configuration ---- #
 
+
     sweep_config = {
-        "method": "random",
-        "metric": {"name": "f1", "goal": "maximize"},
-        "parameters": {
-            "max_it": {"values": list(range(50, 160,10))},
-            "lr": {"min": 0.0001, "max": 0.01},
-            "lambd": {"min": 1.0, "max": 25.0},
-            "dirichlet_seed": {"min": 0.0, "max": 1.0},
+        "method": "bayes",  
+        "metric": {
+            "name": "f1",  
+            "goal": "maximize"
         },
+        "parameters": {
+            # --- GD hyperparameters --- #
+            "max_it": {
+                "distribution": "q_uniform",  # Campiona interi con step 10
+                "min": 50,
+                "max": 160,
+                "q": 10
+            },
+            "lr": {
+                "distribution": "log_uniform",  # Scala logaritmica per learning rate
+                "min": 0.001,
+                "max": 0.05
+            },
+            "lambd": {
+                "distribution": "log_uniform",  # Scala logaritmica per regolarizzazione
+                "min": 0.01,
+                "max": 5.0
+            },
+            
+            # --- Promising actions weights --- #
+            "p1": {"distribution": "normal", "mu": 0, "sigma": 1},  
+            "p2": {"distribution": "normal", "mu": 0, "sigma": 1},
+            "p3": {"distribution": "normal", "mu": 0, "sigma": 1},
+            "p4": {"distribution": "normal", "mu": 0, "sigma": 1},
+        }
     }
 
-    sweep_id = wandb.sweep(sweep_config, project=f"nabla-cmh_search {graph_name} {alg} tau_{tau} beta_{c_beta}")
+
+    sweep_id = wandb.sweep(sweep_config, project=f"NABLAcmh_search {graph_name} {alg} tau_{tau} beta_{c_beta}")
     wandb.agent(sweep_id, function=lambda: exp(env,save_path), count=1000)
 
 
