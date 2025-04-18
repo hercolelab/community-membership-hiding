@@ -1,0 +1,44 @@
+{
+    "name": "Zachary Karate Club",
+    "import_time": 0.000991,
+    "n_nodes": 34,
+    "n_edges": 78,
+    "diameter": 5,
+    "avg_degree": 4.588235294117647,
+    "max_degree": 17,
+    "avg_path_length": 2.408199643493761,
+    "detection_algorithms": {
+        "greedy": {
+            "Number of Communities": 3,
+            "Time": 0.000836
+        },
+        "louvain": {
+            "Number of Communities": 4,
+            "Time": 0.000693
+        },
+        "walktrap": {
+            "Number of Communities": 5,
+            "Time": 0.000801
+        },
+        "infomap": {
+            "Number of Communities": 3,
+            "Time": 0.009033
+        },
+        "label_propagation": {
+            "Number of Communities": 2,
+            "Time": 0.000328
+        },
+        "leading_eigenvector": {
+            "Number of Communities": 4,
+            "Time": 0.003987
+        },
+        "edge_betweenness": {
+            "Number of Communities": 5,
+            "Time": 0.000929
+        },
+        "spinglass": {
+            "Number of Communities": 4,
+            "Time": 0.332887
+        }
+    }
+}

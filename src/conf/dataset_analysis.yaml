@@ -1,0 +1,10 @@
+graph: KAR
+community_detection_algs:
+- GRE
+- LOUV
+- WALK
+- INF
+- LAB
+- EIG
+- BTW
+- SPIN

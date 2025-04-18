@@ -123,11 +123,11 @@ def main(cfg: DictConfig) -> None:
     # ------ UPDATE HYDRA CONFIG FILE ------ #
     with open("src/conf/hyp_search.yaml", "r") as file:
             cfg = yaml.safe_load(file)
-    cfg["graphs"] = graph_name
-    cfg["community_detection_algs"] = alg
-    cfg["evasion_attack_algs"] = "NABLA"
-    cfg["budget_multipliers"] = tau
-    cfg["similarity_thresholds"] = c_beta
+    cfg["graph"] = graph_name
+    cfg["community_detection_alg"] = alg
+    cfg["evasion_attack_alg"] = "NABLA"
+    cfg["budget_multiplier"] = c_beta
+    cfg["similarity_thresholds"] = tau
     with open("src/conf/hyp_search.yaml", "w") as file:
         yaml.dump(cfg, file, sort_keys=False)
 

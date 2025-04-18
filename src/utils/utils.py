@@ -53,12 +53,15 @@ class DatasetNames(Enum):
    
 class DetectionAlgorithmsNames(Enum):
     """Enum class for the detection algorithms"""
-
+    
     GRE = "greedy"
-    INF = "infomap"
-    LAB = "label_propagation"
     LOUV = "louvain"
     WALK = "walktrap"
+    INF = "infomap"
+    LAB = "label_propagation"
+    EIG = "leading_eigenvector"
+    BTW = "edge_betweenness"
+    SPIN = "spinglass"
 
 class EvasionAlgorithmsNames(Enum):
     RAND = "random"
@@ -129,7 +132,8 @@ class Utils:
     @staticmethod
     def import_graph(file_path: str) -> ig.Graph:
         """
-        Import an unweighted graph from a txt file using igraph
+        Import a graph from a txt file using igraph, ensure nodes are labeled from 0 to n-1,
+        and store original labels as vertex 'name' attribute.
 
         Parameters
         ----------
@@ -139,17 +143,24 @@ class Utils:
         Returns
         -------
         ig.Graph
-            Graph imported from the file path
+            Graph with consecutive integer node labels and original names preserved
         """
-        if file_path.endswith(".txt"):
-            graph = ig.Graph.Read_Edgelist(file_path, directed=False)
-            graph = graph.simplify(multiple=True, loops=True)
-        else:
+        if not file_path.endswith(".txt"):
             raise ValueError("File format not supported")
         
-        # Remove nodes with degree 0
-        ## Igraph starts from 0 index, so if txt file starts from 1, we need to delete the first vertex
-        graph.delete_vertices(graph.vs.select(_degree_eq=0))
+        # Load raw edge list
+        with open(file_path, "r") as f:
+            edges = [tuple(map(int, line.strip().split())) for line in f if line.strip()]
+        # Extract all unique nodes
+        unique_nodes = sorted(set([node for edge in edges for node in edge]))
+        node_mapping = {old_id: new_id for new_id, old_id in enumerate(unique_nodes)}
+        # Relabel edges with new node ids
+        relabeled_edges = [(node_mapping[src], node_mapping[dst]) for src, dst in edges]
+        # Create graph from relabeled edge list
+        graph = ig.Graph(edges=relabeled_edges, directed=False)
+        # Store original node IDs as 'name' attribute
+        graph.vs["name"] = [str(n) for n in unique_nodes]  
+
         return graph
 
     @staticmethod

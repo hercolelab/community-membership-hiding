@@ -13,12 +13,12 @@ This script supports running multiple evasion attack algorithms on several datas
 and detection algorithms, with a specified budget and similarity threshold.
 
 Available Datasets:
-    - KAR:       0-33 nodes
-    - WORDS:     0-111 nodes
-    - VOTE:      0-888 nodes
-    - POW:       0-4940 nodes
-    - FB_75:     0-6385 nodes
-    - COND_MAT:  0-23132 nodes
+    - KAR: Zachary Karate Club    
+    - WORDS: David Copperfield Words    
+    - VOTE: Wikipedia Voting    
+    - POW: U.S. Power Grid   
+    - FB_75: Facebook Friendships
+    - COND_MAT: Condense Matter Collaborations
 
 Available Community Detection Algorithms:
     - GRE:  Greedy

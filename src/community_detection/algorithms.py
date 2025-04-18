@@ -7,6 +7,20 @@ import os
 import igraph as ig
 import random
 
+
+"""
+Community detection algorithms using iGraph.
+
+The algorithms are:
+- Greedy
+- Infomap
+- Label Propagation
+- Louvain
+- Walktrap
+
+
+"""
+
 class CommunityDetectionAlg(object):
 	"""Class for the community detection algorithms using iGraph"""
 
@@ -52,14 +66,20 @@ class CommunityDetectionAlg(object):
 		# Choose the algorithm
 		if self.alg_name == da.GRE.value:
 			return self.compute_gre(graph, args)
+		elif self.alg_name == da.LOUV.value:
+				return self.compute_louv(graph, args)
+		elif self.alg_name == da.WALK.value:
+			return self.compute_walk(graph, args)	
 		elif self.alg_name == da.INF.value:
 			return self.compute_inf(graph, args)
 		elif self.alg_name == da.LAB.value:
 			return self.compute_lab(graph, args)
-		elif self.alg_name == da.LOUV.value:
-			return self.compute_louv(graph, args)
-		elif self.alg_name == da.WALK.value:
-			return self.compute_walk(graph, args)	
+		elif self.alg_name == da.EIG.value:
+			return self.compute_eig(graph, args)
+		elif self.alg_name == da.BTW.value:
+			return self.compute_btw(graph, args)
+		elif self.alg_name == da.SPIN.value:
+			return self.compute_spin(graph, args)
 		else:
 			raise ValueError("Invalid algorithm name")
 		
@@ -192,3 +212,72 @@ class CommunityDetectionAlg(object):
 			walk = graph.community_walktrap(**args_walk)
 		# Need to be converted to VertexClustering object
 		return self.from_vertexcluster_tolist(walk.as_clustering())
+
+	def compute_eig(self, graph: ig.Graph, args_eig: dict) -> List[List[int]]:
+		"""
+		Compute the Leading Eigenvector community detection algorithm
+
+		Parameters
+		----------
+		graph : ig.Graph
+			The graph to be clustered
+		args_eig : dict
+			The arguments for the Eigenvector algorithm
+
+		Returns
+		----------
+		List[List[int]]
+			list of list of vertices in each cluster
+		"""
+
+		if args_eig is None:
+			eig = graph.community_leading_eigenvector()
+		else:
+			eig = graph.community_leading_eigenvector(**args_eig)
+		return self.from_vertexcluster_tolist(eig)
+
+	def compute_btw(self, graph: ig.Graph, args_btw: dict) -> List[List[int]]:
+		"""
+		Compute the Edge Betweenness community detection algorithm
+
+		Parameters
+		----------
+		graph : ig.Graph
+			The graph to be clustered
+		args_btw : dict
+			The arguments for the Betweenness algorithm
+
+		Returns
+		----------
+		List[List[int]]
+			list of list of vertices in each cluster
+		"""
+
+		if args_btw is None:
+			btw = graph.community_edge_betweenness()
+		else:
+			btw = graph.community_edge_betweenness(**args_btw)
+		return self.from_vertexcluster_tolist(btw.as_clustering())
+	
+	def compute_spin(self, graph: ig.Graph, args_spin: dict) -> List[List[int]]:
+		"""
+		Compute the Spin Glass community detection algorithm
+
+		Parameters
+		----------
+		graph : ig.Graph
+			The graph to be clustered
+		args_spin : dict
+			The arguments for the Spin algorithm
+
+		Returns
+		----------
+		List[List[int]]
+			list of list of vertices in each cluster
+		"""
+
+		if args_spin is None:
+			spin = graph.community_spinglass()
+		else:
+			spin = graph.community_spinglass(**args_spin)
+		return self.from_vertexcluster_tolist(spin)
