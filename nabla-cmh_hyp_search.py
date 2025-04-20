@@ -115,7 +115,7 @@ def main(cfg: DictConfig) -> None:
     save_path = HydraConfig.get().runtime.output_dir
 
     # ------ EXPERIMENTS CONFIGURATION ------ #
-    graph_name = "KAR"
+    graph_name = "FB_75"
     alg = ["GRE"]
     tau = 0.5
     c_beta = 2
@@ -158,13 +158,13 @@ def main(cfg: DictConfig) -> None:
             },
             "lr": {
                 "distribution": "log_uniform",  
-                "min": np.log(0.001),
-                "max": np.log(0.5)
+                "min": np.log(0.0001),
+                "max": np.log(0.01)
             },
             "lambd": {
                 "distribution": "log_uniform",  
-                "min": np.log(0.01),
-                "max": np.log(5.0)
+                "min": np.log(0.1),
+                "max": np.log(50.0)
             },
             
             # --- Promising actions weights --- #
