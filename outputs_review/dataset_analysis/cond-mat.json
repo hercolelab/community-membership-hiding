@@ -1,0 +1,51 @@
+{
+    "name": "Condense Matter Collaborations",
+    "import_time": 0.13997,
+    "n_nodes": 21363,
+    "n_edges": 91286,
+    "diameter": 15,
+    "avg_degree": 8.546,
+    "max_degree": 279,
+    "avg_path_length": 5.352,
+    "detection_algorithms": {
+        "greedy": {
+            "Number of Communities": 270,
+            "Modularity": 0.64441,
+            "Time": 1.702693
+        },
+        "louvain": {
+            "Number of Communities": 51,
+            "Modularity": 0.726787,
+            "Time": 0.106462
+        },
+        "leiden": {
+            "Number of Communities": 56,
+            "Modularity": 0.735201,
+            "Time": 0.521404
+        },
+        "walktrap": {
+            "Number of Communities": 2306,
+            "Modularity": 0.572629,
+            "Time": 10.37659
+        },
+        "infomap": {
+            "Number of Communities": 1335,
+            "Modularity": 0.63528,
+            "Time": 35.6251
+        },
+        "label_propagation": {
+            "Number of Communities": 1553,
+            "Modularity": 0.62013,
+            "Time": 0.369274
+        },
+        "leading_eigenvector": {
+            "Number of Communities": "NA",
+            "Time": "NA"
+        },
+        "spinglass": {
+            "Number of Communities": 25,
+            "Modularity": 0.723929,
+            "Time": 738.199543
+        }
+    }
+}

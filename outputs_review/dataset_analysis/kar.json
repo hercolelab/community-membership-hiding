@@ -1,44 +1,57 @@
 {
     "name": "Zachary Karate Club",
-    "import_time": 0.000991,
+    "import_time": 0.000147,
     "n_nodes": 34,
     "n_edges": 78,
     "diameter": 5,
-    "avg_degree": 4.588235294117647,
+    "avg_degree": 4.588,
     "max_degree": 17,
-    "avg_path_length": 2.408199643493761,
+    "avg_path_length": 2.408,
     "detection_algorithms": {
         "greedy": {
             "Number of Communities": 3,
-            "Time": 0.000836
+            "Modularity": 0.380671,
+            "Time": 6.7e-05
         },
         "louvain": {
             "Number of Communities": 4,
-            "Time": 0.000693
+            "Modularity": 0.418803,
+            "Time": 0.000108
+        },
+        "leiden": {
+            "Number of Communities": 4,
+            "Modularity": 0.41979,
+            "Time": 0.000769
         },
         "walktrap": {
             "Number of Communities": 5,
-            "Time": 0.000801
+            "Modularity": 0.353222,
+            "Time": 0.00011
         },
         "infomap": {
             "Number of Communities": 3,
-            "Time": 0.009033
+            "Modularity": 0.402038,
+            "Time": 0.006987
         },
         "label_propagation": {
             "Number of Communities": 2,
-            "Time": 0.000328
+            "Modularity": 0.371466,
+            "Time": 0.000102
         },
         "leading_eigenvector": {
             "Number of Communities": 4,
-            "Time": 0.003987
+            "Modularity": 0.393409,
+            "Time": 0.002131
         },
         "edge_betweenness": {
             "Number of Communities": 5,
-            "Time": 0.000929
+            "Modularity": 0.401298,
+            "Time": 0.000835
         },
         "spinglass": {
             "Number of Communities": 4,
-            "Time": 0.332887
+            "Modularity": 0.41979,
+            "Time": 0.420321
         }
     }
 }

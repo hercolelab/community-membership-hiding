@@ -1,0 +1,57 @@
+{
+    "name": "David Copperfield Words",
+    "import_time": 0.01068,
+    "n_nodes": 112,
+    "n_edges": 425,
+    "diameter": 5,
+    "avg_degree": 7.589,
+    "max_degree": 49,
+    "avg_path_length": 2.536,
+    "detection_algorithms": {
+        "greedy": {
+            "Number of Communities": 7,
+            "Modularity": 0.294696,
+            "Time": 0.000243
+        },
+        "louvain": {
+            "Number of Communities": 7,
+            "Modularity": 0.293996,
+            "Time": 0.000366
+        },
+        "leiden": {
+            "Number of Communities": 6,
+            "Modularity": 0.302829,
+            "Time": 0.003569
+        },
+        "walktrap": {
+            "Number of Communities": 25,
+            "Modularity": 0.216213,
+            "Time": 0.000777
+        },
+        "infomap": {
+            "Number of Communities": 2,
+            "Modularity": 0.009235,
+            "Time": 0.036574
+        },
+        "label_propagation": {
+            "Number of Communities": 1,
+            "Modularity": 0.0,
+            "Time": 0.000248
+        },
+        "leading_eigenvector": {
+            "Number of Communities": 10,
+            "Modularity": 0.242602,
+            "Time": 0.009272
+        },
+        "edge_betweenness": {
+            "Number of Communities": 69,
+            "Modularity": 0.080537,
+            "Time": 0.101571
+        },
+        "spinglass": {
+            "Number of Communities": 8,
+            "Modularity": 0.310721,
+            "Time": 1.993095
+        }
+    }
+}

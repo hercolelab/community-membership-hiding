@@ -1,0 +1,57 @@
+{
+    "name": "Wikipedia Voting",
+    "import_time": 0.002675,
+    "n_nodes": 889,
+    "n_edges": 2914,
+    "diameter": 13,
+    "avg_degree": 6.556,
+    "max_degree": 102,
+    "avg_path_length": 4.096,
+    "detection_algorithms": {
+        "greedy": {
+            "Number of Communities": 12,
+            "Modularity": 0.547005,
+            "Time": 0.003425
+        },
+        "louvain": {
+            "Number of Communities": 9,
+            "Modularity": 0.575221,
+            "Time": 0.001988
+        },
+        "leiden": {
+            "Number of Communities": 10,
+            "Modularity": 0.594345,
+            "Time": 0.016037
+        },
+        "walktrap": {
+            "Number of Communities": 42,
+            "Modularity": 0.561373,
+            "Time": 0.021912
+        },
+        "infomap": {
+            "Number of Communities": 75,
+            "Modularity": 0.511637,
+            "Time": 0.736294
+        },
+        "label_propagation": {
+            "Number of Communities": 13,
+            "Modularity": 0.5393,
+            "Time": 0.003979
+        },
+        "leading_eigenvector": {
+            "Number of Communities": 6,
+            "Modularity": 0.520009,
+            "Time": 0.029331
+        },
+        "edge_betweenness": {
+            "Number of Communities": 16,
+            "Modularity": 0.568533,
+            "Time": 27.701101
+        },
+        "spinglass": {
+            "Number of Communities": 11,
+            "Modularity": 0.598055,
+            "Time": 10.40925
+        }
+    }
+}

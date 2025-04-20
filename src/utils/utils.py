@@ -27,6 +27,9 @@ class FilePaths(Enum):
     POW = DATASETS_DIR + "/pow.txt"
     FB_75 = DATASETS_DIR + "/fb-75.txt"
     COND_MAT = DATASETS_DIR + "/cond-mat.txt"
+    FB_ART = DATASETS_DIR + "/fb-artist.txt"
+    DBLP = DATASETS_DIR + "/dblp.txt"
+    YT = DATASETS_DIR + "/youtube.txt"
 
     # Trained model path for testing (change the following line to change the model)
     TRAINED_MODEL = "src/methods/drl_agent/models/steps-10000_words-gre_eps-0_model.pth"
@@ -40,6 +43,9 @@ class DatasetFullNames(Enum):
     POW = "U.S. Power Grid"
     FB_75 = "Facebook Friendships"
     COND_MAT = "Condense Matter Collaborations"
+    FB_ART = "Facebook Artist Pages"
+    DBLP = "DBLP Collaboration Network"
+    YT = "Youtube Social Network"
 
 class DatasetNames(Enum):
     """Enum class for the dataset names"""
@@ -50,6 +56,9 @@ class DatasetNames(Enum):
     POW = "pow"
     FB_75 = "fb-75"
     COND_MAT = "cond-mat"
+    FB_ART = "fb-artist"
+    DBLP = "dblp"
+    YT = "youtube"
    
 class DetectionAlgorithmsNames(Enum):
     """Enum class for the detection algorithms"""
@@ -57,6 +66,7 @@ class DetectionAlgorithmsNames(Enum):
     GRE = "greedy"
     LOUV = "louvain"
     WALK = "walktrap"
+    LEID = "leiden"
     INF = "infomap"
     LAB = "label_propagation"
     EIG = "leading_eigenvector"
@@ -158,10 +168,13 @@ class Utils:
         relabeled_edges = [(node_mapping[src], node_mapping[dst]) for src, dst in edges]
         # Create graph from relabeled edge list
         graph = ig.Graph(edges=relabeled_edges, directed=False)
+        graph = graph.simplify(multiple=True, loops=True)
         # Store original node IDs as 'name' attribute
-        graph.vs["name"] = [str(n) for n in unique_nodes]  
+        graph.vs["name"] = unique_nodes 
+        # Return the biggest connected component
+        largest_component = graph.clusters().giant()
 
-        return graph
+        return largest_component
 
     @staticmethod
     def check_dir(path: str) -> None:

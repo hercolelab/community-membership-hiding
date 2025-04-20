@@ -1,0 +1,52 @@
+{
+    "name": "Facebook Friendships",
+    "import_time": 0.146309,
+    "n_nodes": 6370,
+    "n_edges": 217654,
+    "diameter": 9,
+    "avg_degree": 68.337,
+    "max_degree": 930,
+    "avg_path_length": 2.766,
+    "detection_algorithms": {
+        "greedy": {
+            "Number of Communities": 16,
+            "Modularity": 0.380796,
+            "Time": 1.157736
+        },
+        "louvain": {
+            "Number of Communities": 12,
+            "Modularity": 0.421001,
+            "Time": 0.166011
+        },
+        "leiden": {
+            "Number of Communities": 13,
+            "Modularity": 0.430282,
+            "Time": 0.709276
+        },
+        "walktrap": {
+            "Number of Communities": 349,
+            "Modularity": 0.38066,
+            "Time": 6.603838
+        },
+        "infomap": {
+            "Number of Communities": 124,
+            "Modularity": 0.395226,
+            "Time": 39.253228
+        },
+        "label_propagation": {
+            "Number of Communities": 12,
+            "Modularity": 0.206766,
+            "Time": 0.047521
+        },
+        "leading_eigenvector": {
+            "Number of Communities": 5,
+            "Modularity": 0.393187,
+            "Time": 0.504911
+        },
+        "spinglass": {
+            "Number of Communities": 21,
+            "Modularity": 0.430912,
+            "Time": 863.840795
+        }
+    }
+}

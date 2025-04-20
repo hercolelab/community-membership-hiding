@@ -1,0 +1,51 @@
+{
+    "name": "Facebook Artist Pages",
+    "import_time": 0.69091,
+    "n_nodes": 50515,
+    "n_edges": 819090,
+    "diameter": 11,
+    "avg_degree": 32.43,
+    "max_degree": 1469,
+    "avg_path_length": 3.686,
+    "detection_algorithms": {
+        "greedy": {
+            "Number of Communities": 281,
+            "Modularity": 0.456295,
+            "Time": 122.924262
+        },
+        "louvain": {
+            "Number of Communities": 32,
+            "Modularity": 0.593191,
+            "Time": 2.129786
+        },
+        "leiden": {
+            "Number of Communities": 31,
+            "Modularity": 0.620855,
+            "Time": 3.528397
+        },
+        "walktrap": {
+            "Number of Communities": 2555,
+            "Modularity": 0.550986,
+            "Time": 304.967463
+        },
+        "infomap": {
+            "Number of Communities": 1529,
+            "Modularity": 0.546194,
+            "Time": 478.170088
+        },
+        "label_propagation": {
+            "Number of Communities": 55,
+            "Modularity": 0.257331,
+            "Time": 0.518204
+        },
+        "leading_eigenvector": {
+            "Number of Communities": "NA",
+            "Time": "NA"
+        },
+        "spinglass": {
+            "Number of Communities": 25,
+            "Modularity": 0.599785,
+            "Time": 4517.839783
+        }
+    }
+}

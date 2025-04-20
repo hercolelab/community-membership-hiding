@@ -1,0 +1,57 @@
+{
+    "name": "U.S. Power Grid",
+    "import_time": 0.010912,
+    "n_nodes": 4941,
+    "n_edges": 6594,
+    "diameter": 46,
+    "avg_degree": 2.669,
+    "max_degree": 19,
+    "avg_path_length": 18.989,
+    "detection_algorithms": {
+        "greedy": {
+            "Number of Communities": 41,
+            "Modularity": 0.933511,
+            "Time": 0.003531
+        },
+        "louvain": {
+            "Number of Communities": 41,
+            "Modularity": 0.935344,
+            "Time": 0.008803
+        },
+        "leiden": {
+            "Number of Communities": 38,
+            "Modularity": 0.93813,
+            "Time": 0.055911
+        },
+        "walktrap": {
+            "Number of Communities": 364,
+            "Modularity": 0.830962,
+            "Time": 0.105511
+        },
+        "infomap": {
+            "Number of Communities": 487,
+            "Modularity": 0.816781,
+            "Time": 3.567437
+        },
+        "label_propagation": {
+            "Number of Communities": 499,
+            "Modularity": 0.800225,
+            "Time": 0.065316
+        },
+        "leading_eigenvector": {
+            "Number of Communities": 130,
+            "Modularity": 0.897732,
+            "Time": 3.449903
+        },
+        "edge_betweenness": {
+            "Number of Communities": 45,
+            "Modularity": 0.933016,
+            "Time": 66.356223
+        },
+        "spinglass": {
+            "Number of Communities": 25,
+            "Modularity": 0.92237,
+            "Time": 63.738616
+        }
+    }
+}

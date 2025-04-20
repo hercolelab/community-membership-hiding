@@ -11,6 +11,7 @@ import json
 import hydra
 import yaml
 from omegaconf import DictConfig
+import leidenalg as la
 
 """ 
 Available Datasets (only one can be selected):
@@ -20,11 +21,15 @@ Available Datasets (only one can be selected):
     - POW: U.S. Power Grid   
     - FB_75: Facebook Friendships
     - COND_MAT: Condense Matter Collaborations
+    - FB_ART : Facebook Artist Pages
+    - DBLP : DBLP Collaborations
+    - YT: YouTube Social Network
 
 Available Community Detection Algorithms (multiple can be selected):
     - GRE:  Greedy
     - LOUV: Louvain
     - WALK: Walktrap
+    - LEID: Leiden
     - INF:  Infomap
     - LAB:  Label Propagation
     - EIG:  Leading Eigenvector
@@ -36,8 +41,12 @@ Available Community Detection Algorithms (multiple can be selected):
 """
 
 # ------ EXPERIMENT CONFIGURATION ------ #
-graph = "KAR"
-detection_algs = ["GRE", "LOUV", "WALK", "INF", "LAB", "EIG", "BTW", "SPIN"]
+graph = "DBLP"
+
+#detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "BTW", "SPIN"]
+# For large graphs, do not use "BTW" since in n^3 complexity
+detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SPIN"]
+
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #
 root_dir = os.path.abspath(os.path.join('./'))
@@ -115,6 +124,7 @@ def main(cfg:DictConfig) -> None:
         "GRE": G.community_fastgreedy,
         "LOUV": G.community_multilevel,
         "WALK": G.community_walktrap,
+        "LEID": la.find_partition,
         "INF": G.community_infomap,
         "LAB": G.community_label_propagation,
         "EIG": G.community_leading_eigenvector,
@@ -136,16 +146,22 @@ def main(cfg:DictConfig) -> None:
         try:
             if alg in ["GRE", "WALK", "BTW"]:
                 communities = algorithm().as_clustering()
+            elif alg == "LEID":
+                communities = algorithm(G, la.ModularityVertexPartition)
             else:
                 communities = algorithm()
 
             end_time = time.time()
             detect_time = round(end_time - start_time, 6)
 
+            memberships = communities.membership
+            modularity = G.modularity(memberships)
+
             log.info(f"- Algorithm {alg_name} executed correctly.")
 
             results["detection_algorithms"][alg_name] = {
                 "Number of Communities": len(communities),
+                "Modularity": round(modularity, 6),
                 "Time": detect_time
             }
 

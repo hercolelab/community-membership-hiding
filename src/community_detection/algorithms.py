@@ -5,6 +5,7 @@ from cdlib import algorithms
 import cdlib
 import os
 import igraph as ig
+import leidenalg as la
 import random
 
 
@@ -69,7 +70,9 @@ class CommunityDetectionAlg(object):
 		elif self.alg_name == da.LOUV.value:
 				return self.compute_louv(graph, args)
 		elif self.alg_name == da.WALK.value:
-			return self.compute_walk(graph, args)	
+			return self.compute_walk(graph, args)
+		elif self.alg_name == da.LEID.value:
+			return self.compute_leid(graph, args)	
 		elif self.alg_name == da.INF.value:
 			return self.compute_inf(graph, args)
 		elif self.alg_name == da.LAB.value:
@@ -281,3 +284,26 @@ class CommunityDetectionAlg(object):
 		else:
 			spin = graph.community_spinglass(**args_spin)
 		return self.from_vertexcluster_tolist(spin)
+
+	def compute_leiden(self, graph: ig.Graph, args_leiden: dict) -> List[List[int]]:
+		"""
+		Compute the Leiden community detection algorithm
+
+		Parameters
+		----------
+		graph : ig.Graph
+			The graph to be clustered
+		args_leiden : dict
+			The arguments for the Leiden algorithm
+
+		Returns
+		----------
+		List[List[int]]
+			list of list of vertices in each cluster
+		"""
+
+		if args_leiden is None:
+			louv = la.find_partition(graph, la.ModularityVertexPartition)
+		else:
+			louv = la.find_partition(graph, la.ModularityVertexPartition, **args_leiden)
+		return self.from_vertexcluster_tolist(louv)

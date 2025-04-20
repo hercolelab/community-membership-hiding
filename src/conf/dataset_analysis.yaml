@@ -1,10 +1,10 @@
-graph: KAR
+graph: DBLP
 community_detection_algs:
 - GRE
 - LOUV
+- LEID
 - WALK
 - INF
 - LAB
 - EIG
-- BTW
 - SPIN

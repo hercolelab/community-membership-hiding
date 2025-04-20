@@ -1,0 +1,51 @@
+{
+    "name": "DBLP Collaboration Network",
+    "import_time": 1.295179,
+    "n_nodes": 317080,
+    "n_edges": 1049866,
+    "diameter": 23,
+    "avg_degree": 6.622,
+    "max_degree": 343,
+    "avg_path_length": 6.792,
+    "detection_algorithms": {
+        "greedy": {
+            "Number of Communities": 3167,
+            "Modularity": 0.728655,
+            "Time": 409.617816
+        },
+        "louvain": {
+            "Number of Communities": 212,
+            "Modularity": 0.820835,
+            "Time": 3.367044
+        },
+        "leiden": {
+            "Number of Communities": 267,
+            "Modularity": 0.830468,
+            "Time": 8.221617
+        },
+        "walktrap": {
+            "Number of Communities": 30425,
+            "Modularity": 0.671933,
+            "Time": 1631.181645
+        },
+        "infomap": {
+            "Number of Communities": 16969,
+            "Modularity": 0.722575,
+            "Time": 1913.242572
+        },
+        "label_propagation": {
+            "Number of Communities": 20860,
+            "Modularity": 0.676778,
+            "Time": 89.478221
+        },
+        "leading_eigenvector": {
+            "Number of Communities": "NA",
+            "Time": "NA"
+        },
+        "spinglass": {
+            "Number of Communities": 25,
+            "Modularity": 0.801035,
+            "Time": 12221.033253
+        }
+    }
+}
