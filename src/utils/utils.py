@@ -138,6 +138,40 @@ class SimilarityFunctionsNames(Enum):
 
 class Utils:
     """Class to store utility functions"""
+
+    def pre_process_graph(file_path:str) -> None:
+        """
+        Pre-process the graph by removing self-loops,multiple edges, and consider only the biggest connected component.
+        The graph is saved in the same file.
+
+        Parameters
+        ----------
+        file_path : str
+            File path of the .txt file
+        """
+        if not file_path.endswith(".txt"):
+            raise ValueError("File format not supported")
+        
+        # Load raw edge list
+        with open(file_path, "r") as f:
+            edges = [tuple(map(int, line.strip().split())) for line in f if line.strip()]
+        # Extract all unique nodes
+        unique_nodes = sorted(set([node for edge in edges for node in edge]))
+        node_mapping = {old_id: new_id for new_id, old_id in enumerate(unique_nodes)}
+        reverse_node_mapping = {new_id: old_id for new_id, old_id in enumerate(unique_nodes)}
+        # Relabel edges with new node ids
+        relabeled_edges = [(node_mapping[src], node_mapping[dst]) for src, dst in edges]
+        # Create graph from relabeled edge list
+        graph = ig.Graph(edges=relabeled_edges, directed=False)
+        graph = graph.simplify(multiple=True, loops=True)
+        # Store original node IDs as 'name' attribute
+        graph.vs["name"] = unique_nodes 
+        # Return the biggest connected component
+        largest_component = graph.clusters().giant()
+
+        with open(file_path, "w") as f:
+            for edge in largest_component.get_edgelist():
+                f.write(f"{reverse_node_mapping[edge[0]]} {reverse_node_mapping[edge[1]]}\n")
     
     @staticmethod
     def import_graph(file_path: str) -> ig.Graph:
@@ -168,13 +202,13 @@ class Utils:
         relabeled_edges = [(node_mapping[src], node_mapping[dst]) for src, dst in edges]
         # Create graph from relabeled edge list
         graph = ig.Graph(edges=relabeled_edges, directed=False)
-        graph = graph.simplify(multiple=True, loops=True)
+        #graph = graph.simplify(multiple=True, loops=True) # avoided because we apply pre_process_graph
         # Store original node IDs as 'name' attribute
         graph.vs["name"] = unique_nodes 
-        # Return the biggest connected component
-        largest_component = graph.clusters().giant()
+        # Return the biggest connected component    # avoided because we apply pre_process_graph
+        #largest_component = graph.clusters().giant()
 
-        return largest_component
+        return graph
 
     @staticmethod
     def check_dir(path: str) -> None:
