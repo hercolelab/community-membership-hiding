@@ -65,7 +65,7 @@ class DiceHiding:
         # ---- STEP 1 ---- #
         
         # Create a subgraph containing only the target community
-        subgraph: ig.Graph = graph.subgraph(self.target_community)
+        subgraph: ig.Graph = graph.induced_subgraph(self.target_community)
         # Get neighbours of the target node in the subgraph
         new_id_target_node = self.target_community.index(self.target_node)
         intra_neighbours: List[int] = subgraph.neighbors(new_id_target_node)

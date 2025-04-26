@@ -7,14 +7,15 @@ evasion_attack_algs:
 - NABLA
 - DRL
 graphs:
-- KAR
+- WORDS
 community_detection_algs:
 - GRE
+- LOC
 - LOUV
 - WALK
+- SCD
+- LEID
 budget_multipliers:
-- 0.5
 - 1
-- 2
 similarity_thresholds:
 - 0.5

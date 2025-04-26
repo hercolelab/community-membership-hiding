@@ -1,14 +1,15 @@
 import igraph as ig
-from typing import Dict
+from collections import defaultdict
 import random
 import numpy as np
 from typing import List
 import re
+from cdlib import NodeClustering
 
 """General Estimator base class."""
 
 
-class Estimator(object):
+class ig_Estimator(object):
     """Estimator base class with constructor and public methods."""
 
     seed: int
@@ -49,9 +50,10 @@ class Estimator(object):
     def _ensure_integrity(graph: ig.Graph) -> ig.Graph:
         """Ensure walk traversal conditions."""
         edge_list = [(index, index) for index in range(graph.vcount())]
-        graph.add_edges(edge_list)
-
-        return graph
+        temp_graph = graph.copy()
+        temp_graph.add_edges(edge_list)
+        
+        return temp_graph
 
     @staticmethod
     def _check_indexing(graph: ig.Graph):
@@ -65,7 +67,7 @@ class Estimator(object):
         """Check the Karate Club assumptions about the graph."""
         self._check_indexing(graph)
         graph = self._ensure_integrity(graph)
-
+        
         return graph
 
     def _check_graphs(self, graphs: List[ig.Graph]):
@@ -76,7 +78,7 @@ class Estimator(object):
 
 
 
-class SCD(Estimator):
+class ig_SCD(ig_Estimator):
     r"""An implementation of `"SCD" <http://wwwconference.org/proceedings/www2014/proceedings/p225.pdf>`_ from the
     WWW '14 paper "High Quality, Scalable and Parallel Community Detection for
     Large Real Graphs". The procedure greedily optimizes the approximate weighted
@@ -162,10 +164,16 @@ class SCD(Estimator):
         for comm, members in inverse_community_index.items():
             induced_graph = self._graph.induced_subgraph(members)
             size = induced_graph.vcount()
-            density = induced_graph.density()
+            if size < 2: 
+                density = 0
+            else:
+                density = induced_graph.density()
             edge_out = sum(
-                1 for node in members for neighbor in self._graph.neighbors(node)
-                if neighbor not in members
+                [
+                    0 if neighbor in members else 1
+                    for node in members
+                    for neighbor in self._graph.neighbors(node)
+                ]
             )
             community_statistics[comm] = {"r": size, "d": density, "b": edge_out}
         return community_statistics
@@ -301,14 +309,26 @@ class SCD(Estimator):
             self._do_refinement()
 
 
-    def get_memberships(self) -> Dict[int, int]:
+    def get_memberships(self) -> NodeClustering:
         r"""Getting the cluster membership of nodes.
 
-        Return types:
-            * **memberships** *(dict)* - Node cluster memberships.
+        Returns
+        -------
+        NodeClustering
+            The detected communities as a NodeClustering object.
         """
-        memberships = self._cluster_memberships
-        return memberships
+        members = self._cluster_memberships
+        coms_to_node = defaultdict(list)
+        for n, c in members.items():
+            coms_to_node[c].append(n)
+        coms = [list(c) for c in coms_to_node.values()]
+        final_coms = NodeClustering(
+            coms,
+            self._graph,
+            "SCD",
+            overlap=False,
+        )
+        return final_coms
 
 
 

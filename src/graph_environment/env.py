@@ -95,7 +95,7 @@ class GraphEnvironment(object):
         self.graph_betweenness: List[float] = self.original_graph.betweenness()
 
         # ------ ENVIRONMENT INFO ------ #
-        self.print_environment_info()
+        self.log_environment_info()
 
 
 
@@ -305,8 +305,8 @@ class GraphEnvironment(object):
     #                             ENVIRONMENT INFO                                  #
     # ============================================================================= #
 
-    def print_environment_info(self) -> None:
-        """Print the environment info"""
+    def log_environment_info(self) -> None:
+        """Hydra-log the environment info"""
 
         log.info("**********************************************")
         log.info("========== ENVIRONMENT INFORMATIONS ==========")
@@ -318,6 +318,19 @@ class GraphEnvironment(object):
         log.info("  • Number of edges        : %d", self.original_graph.ecount())
         log.info("  • Number of communities  : %s", 
                 [len(communities.communities) for communities in self.original_communities])
+        
+    def print_environment_info(self) -> None:
+        """Print the environment info"""
+
+        print("**********************************************")
+        print("========== ENVIRONMENT INFORMATIONS ==========")
+        print("**********************************************")
+        print(" ")
+        print(f"  • Graph name             : {self.graph_name_output} -- {self.graph_name_full}")
+        print(f"  • Detection algorithms   : {self.community_detection_alg_names_output}")
+        print(f"  • Number of nodes        : {self.original_graph.vcount()}")
+        print(f"  • Number of edges        : {self.original_graph.ecount()}")
+        print(f"  • Number of communities  : {[len(communities.communities) for communities in self.original_communities]}")
 
 
 

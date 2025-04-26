@@ -498,7 +498,7 @@ class Agent:
             log_dir = self.get_path()
             path = f'{log_dir}/model.pth'
         
-        checkpoint = torch.load(path, map_location=self.device)
+        checkpoint = torch.load(path, map_location=self.device, weights_only=True)
         self.policy.load_state_dict(checkpoint['model'])
         for key, _ in self.optimizers.items():
             self.optimizers[key].load_state_dict(checkpoint[key])

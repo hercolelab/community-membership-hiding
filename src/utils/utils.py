@@ -31,7 +31,7 @@ class FilePaths(Enum):
     DBLP = DATASETS_DIR + "/dblp.txt"
     YT = DATASETS_DIR + "/youtube.txt"
 
-    # Trained model path for testing (change the following line to change the model)
+    # Trained DRL-Agent model path for testing 
     TRAINED_MODEL = "src/methods/drl_agent/models/steps-10000_words-gre_eps-0_model.pth"
 
 class DatasetFullNames(Enum):
@@ -72,6 +72,8 @@ class DetectionAlgorithmsNames(Enum):
     EIG = "leading_eigenvector"
     BTW = "edge_betweenness"
     SPIN = "spinglass"
+    SCD = "scd"
+    LOC = "locale"
 
 class EvasionAlgorithmsNames(Enum):
     RAND = "random"
@@ -139,7 +141,7 @@ class SimilarityFunctionsNames(Enum):
 class Utils:
     """Class to store utility functions"""
 
-    def pre_process_graph(file_path:str) -> None:
+    def pre_process_graph(file_path:str) -> ig.Graph:
         """
         Pre-process the graph by removing self-loops,multiple edges, and consider only the biggest connected component.
         The graph is saved in the same file.
@@ -172,6 +174,8 @@ class Utils:
         with open(file_path, "w") as f:
             for edge in largest_component.get_edgelist():
                 f.write(f"{reverse_node_mapping[edge[0]]} {reverse_node_mapping[edge[1]]}\n")
+        
+        return largest_component
     
     @staticmethod
     def import_graph(file_path: str) -> ig.Graph:
@@ -324,7 +328,7 @@ class Utils:
                                     x="Algorithm",
                                     y=metric.capitalize(),
                                     hue="Algorithm",
-                                    palette=sns.color_palette("tab10"),
+                                    palette=sns.color_palette("tab10", n_colors=len(evasion_algs)),
                                     edgecolor="black",  
                                     linewidth=0.5
                                 )
