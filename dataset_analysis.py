@@ -12,6 +12,8 @@ import hydra
 import yaml
 from omegaconf import DictConfig
 import leidenalg as la
+from src.community_detection.extra_algs.scd import ig_SCD
+from src.community_detection.extra_algs.locale import ig_leiden_locale
 
 """ 
 Available Datasets (only one can be selected):
@@ -35,17 +37,20 @@ Available Community Detection Algorithms (multiple can be selected):
     - EIG:  Leading Eigenvector
     - BTW:  Edge Betweenness
     - SPIN: Spinglass
+    - SCD: Scalable Community Detection
+    - LOC: Locale
     
-    
-
 """
 
 # ------ EXPERIMENT CONFIGURATION ------ #
 graph = "DBLP"
 
-#detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "BTW", "SPIN"]
+#detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "BTW", "SPIN", "SCD", "LOC"]
 # For large graphs, do not use "BTW" since in n^3 complexity
-detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SPIN"]
+#detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SPIN", "SCD", "LOC"]
+
+detection_algs = ["SCD", "LOC"]
+
 
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #
@@ -130,6 +135,8 @@ def main(cfg:DictConfig) -> None:
         "EIG": G.community_leading_eigenvector,
         "BTW": G.community_edge_betweenness,
         "SPIN": G.community_spinglass,
+        "SCD": ig_SCD(iterations=30),
+        "LOC": ig_leiden_locale,
     }
 
     # Set the random number generator for reproducibility
@@ -148,19 +155,29 @@ def main(cfg:DictConfig) -> None:
                 communities = algorithm().as_clustering()
             elif alg == "LEID":
                 communities = algorithm(G, la.ModularityVertexPartition)
+            elif alg == "SCD":
+                algorithm.fit(G)
+                communities = algorithm.get_memberships()
+            elif alg == "LOC":
+                communities = algorithm(G)
             else:
                 communities = algorithm()
 
             end_time = time.time()
             detect_time = round(end_time - start_time, 6)
 
-            memberships = communities.membership
+            if alg in ["SCD", "LOC"]:
+                memberships = []
+                for node, comm in communities.to_node_community_map().items():
+                    memberships.append(comm[0])
+            else:
+                memberships = communities.membership
             modularity = G.modularity(memberships)
 
             log.info(f"- Algorithm {alg_name} executed correctly.")
 
             results["detection_algorithms"][alg_name] = {
-                "Number of Communities": len(communities),
+                "Number of Communities": len(communities) if alg not in ["SCD", "LOC"] else len(communities.communities),
                 "Modularity": round(modularity, 6),
                 "Time": detect_time
             }

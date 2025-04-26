@@ -47,6 +47,16 @@
             "Number of Communities": 21,
             "Modularity": 0.430912,
             "Time": 863.840795
+        },
+        "scd": {
+            "Number of Communities": 996,
+            "Modularity": -0.000364,
+            "Time": 44.950672
+        },
+        "locale": {
+            "Number of Communities": 12,
+            "Modularity": -0.000795,
+            "Time": 2.535732
         }
     }
 }
