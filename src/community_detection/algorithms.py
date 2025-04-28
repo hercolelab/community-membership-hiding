@@ -1,7 +1,7 @@
 from src.utils.utils import DetectionAlgorithmsNames
 from src.utils.utils import ExperimentHyps, iGraphRNG
 from typing import List, Optional
-from src.community_detection.extra_algs.locale import ig_leiden_locale
+from src.community_detection.extra_algs.locale.locale import ig_leiden_locale
 from src.community_detection.extra_algs.scd import ig_SCD
 from cdlib import NodeClustering
 import igraph as ig
@@ -30,7 +30,7 @@ The algorithms are:
 class CommunityDetectionAlg(object):
 	"""Class for the community detection algorithms using iGraph"""
 
-	def __init__(self, alg_name: str, graph: Optional[ig.Graph]=None) -> None:
+	def __init__(self, alg_name: str, env, graph: Optional[ig.Graph]=None) -> None:
 		"""
 		Initialize the DetectionAlgorithm object
 
@@ -43,6 +43,7 @@ class CommunityDetectionAlg(object):
 		"""
 		self.alg_name = alg_name
 		self.graph = graph
+		self.env = env
 		self.seed = ExperimentHyps.seed.value
 
 	def community_detection(self, graph: ig.Graph, args: dict = None) -> NodeClustering:
@@ -362,9 +363,10 @@ class CommunityDetectionAlg(object):
 			list of list of vertices in each cluster
 		"""
 
+		name = self.env.graph_name + "_" + str(self.env.budget_multiplier).replace(".", "")
 		if args_loc is None:
-			loc = ig_leiden_locale(graph)
+			loc = ig_leiden_locale(graph, name)
 		else:
-			loc = ig_leiden_locale(graph, **args_loc)
+			loc = ig_leiden_locale(graph, name, **args_loc)
 		
 		return loc

@@ -71,7 +71,7 @@ class nablaCMH():
         """
 
         # Set the training detection algorithm
-        da_train = CommunityDetectionAlg(self.training_alg)
+        da_train = CommunityDetectionAlg(self.training_alg, self.env)
         # Evasion parameters
         t: int = 0
         budget_used: int = 0

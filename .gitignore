@@ -20,6 +20,8 @@ config_old.py
 #Hydra
 outputs/
 
+#LOCALE alg
+src/community_detection/extra_algs/locale/temp_graphs/
 
 #Wandb
 wandb/

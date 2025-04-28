@@ -1,5 +1,5 @@
 from src.graph_environment.env import GraphEnvironment
-from src.utils.utils import EvasionAlgorithmsNames
+from src.utils.utils import EvasionAlgorithmsNames, DRL_agentHyps, FilePaths
 import logging
 import hydra
 import yaml
@@ -9,6 +9,7 @@ from src.baselines.betweenness import CentralityHiding
 from src.baselines.roam import RoamHiding
 from src.baselines.dice import DiceHiding
 from src.methods.nabla_cmh.nabla_cmh import nablaCMH
+from src.methods.drl_agent.agent import Agent
 from time import time
 import json
 from omegaconf import DictConfig
@@ -29,11 +30,15 @@ Available Datasets:
     - COND_MAT:  0-23132 nodes
 
 Available Community Detection Algorithms:
-    - GRE:  Greedy
+- GRE:  Greedy
     - INF:  Infomap
     - LAB:  Label Propagation
     - LOUV: Louvain
     - WALK: Walktrap
+    - LEID: Leading Eigenvector
+    - SCD:  Scalable Community Detection
+    - LEID: Leiden
+    - LOC: Locale
 
 Available Evasion Attack Algorithms:
     - RAND:  Random
@@ -53,10 +58,12 @@ Suggested Parameters:
 
 # ------ ATTACK CONFIGURATION ------ #
 graph_name = "KAR"
-community_detection_alg = ["GRE", "LOUV", "WALK"]
-evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA"]
+#community_detection_alg = ["GRE", "LOUV", "WALK", "INF", "LAB", "EIG", "SCD",  "LOC"]
+community_detection_alg = ["LOC"]
+evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"]
+#evasion_attack_algs = ["DRL"]
 target_node = 22
-budget_multiplier = 1
+budget_multiplier = 2
 similarity_threshold = 0.5
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #
@@ -120,12 +127,23 @@ def main(cfg: DictConfig) -> None:
             evasion_alg = DiceHiding(env, target_node, env.budget)
         elif alg == EvasionAlgorithmsNames.NABLA.name:
             evasion_alg = nablaCMH(env, target_node, env.budget)
+        elif alg == EvasionAlgorithmsNames.DRL.name:
+            evasion_alg = Agent(env)
         else:
             raise ValueError("Invalid evasion attack algorithm")
         
         # Set the hiding function
         if alg == EvasionAlgorithmsNames.NABLA.name:
             func_call = lambda: evasion_alg.community_membership_hiding(verbose_iterations=True)  
+        elif alg == EvasionAlgorithmsNames.DRL.name:
+                            func_call = lambda: evasion_alg.test(
+                                lr=DRL_agentHyps.LR_EVAL.value,
+                                gamma=DRL_agentHyps.GAMMA_EVAL.value,
+                                lambda_metric=DRL_agentHyps.LAMBDA_EVAL.value,
+                                alpha_metric=DRL_agentHyps.ALPHA_EVAL.value,
+                                epsilon_prob=DRL_agentHyps.EPSILON_EVAL.value,
+                                model_path=FilePaths.TRAINED_MODEL.value,
+                            )  
         else:
             func_call = lambda: evasion_alg.community_membership_hiding()  
 

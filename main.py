@@ -26,6 +26,10 @@ Available Community Detection Algorithms:
     - LAB:  Label Propagation
     - LOUV: Louvain
     - WALK: Walktrap
+    - LEID: Leading Eigenvector
+    - SCD:  Scalable Community Detection
+    - LEID: Leiden
+    - LOC: Locale
 
 Available Evasion Attack Algorithms:
     - RAND:  Random
@@ -43,16 +47,16 @@ Suggested Parameters:
 """
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-graph_names = ["WORDS"]
+graph_names = ["FB_75"]
 
-community_detection_algs = ["GRE", "LOC", "LOUV", "WALK", "SCD", "LEID", ]
-#community_detection_algs = ["WALK"]
+community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC"]
+#community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "SCD", "LOC"]
 
 evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 
 #evasion_algs = ["DRL"]
 
 #beta_factors = [0.5,1,2]
-beta_factors = [1]
+beta_factors = [2]
 
 #taus = [0.3, 0.5, 0.8]
 taus = [0.5]  

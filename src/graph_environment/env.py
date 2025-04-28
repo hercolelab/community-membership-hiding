@@ -49,6 +49,7 @@ class GraphEnvironment(object):
         self.agent_graph: ig.Graph = None # Graph object for the agent, characterized by random features for the nodes embeddings 
         self.old_graph: ig.Graph = None # Graph before the last action, used by some methods to compute distances between graphs
         # Set the graph
+        self.budget_multiplier: int = budget_multiplier
         self.set_graph()
 
         # ------ COMMUNITY MEMBERSHIP HIDING ------ #
@@ -62,7 +63,6 @@ class GraphEnvironment(object):
         self.preferred_community_size: float = ExperimentHyps.target_community_size.value[0]
         self.max_deceptions_for_community: int = ExperimentHyps.max_steps_community_eval.value
         # Budget
-        self.budget_multiplier: int = budget_multiplier
         self.budget: int = self.get_budget()
         # Similarity threshold
         self.tau: float = similarity_threshold
@@ -187,9 +187,9 @@ class GraphEnvironment(object):
         """Set the community detection algorithm class in the environment"""
 
         self.community_detection_algs = [
-            CommunityDetectionAlg(alg_name) for alg_name in self.community_detection_alg_names_output
+            CommunityDetectionAlg(alg_name, self) for alg_name in self.community_detection_alg_names_output
         ]
-        self.nabla_cmh_alg = CommunityDetectionAlg(getattr(DetectionAlgorithmsNames, "GRE").value)
+        self.nabla_cmh_alg = CommunityDetectionAlg(getattr(DetectionAlgorithmsNames, "GRE").value, self)
         self.original_communities = [
             alg.community_detection(self.original_graph) for alg in self.community_detection_algs
         ]

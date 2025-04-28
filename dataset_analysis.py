@@ -13,7 +13,7 @@ import yaml
 from omegaconf import DictConfig
 import leidenalg as la
 from src.community_detection.extra_algs.scd import ig_SCD
-from src.community_detection.extra_algs.locale import ig_leiden_locale
+from community_detection.extra_algs.locale.locale import ig_leiden_locale
 
 """ 
 Available Datasets (only one can be selected):

@@ -143,9 +143,7 @@ class CmhExperiment:
                         elif alg == EvasionAlgorithmsNames.NABLA.name:
                             evasion_alg = nablaCMH(self.env, target_node, self.env.budget)
                         elif alg == EvasionAlgorithmsNames.DRL.name:
-                            evasion_alg = Agent(
-                                env=self.env,
-                            )
+                            evasion_alg = Agent(env=self.env)
                         else:
                             raise ValueError("Invalid evasion attack algorithm")
                         

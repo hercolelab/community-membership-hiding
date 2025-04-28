@@ -1,10 +1,8 @@
 graph: KAR
 community_detection:
-- GRE
-- LOUV
-- WALK
+- LOC
 target_node: 22
-budget_multiplier: 1
+budget_multiplier: 2
 similarity_threshold: 0.5
 evasion_attack_algs:
 - RAND
@@ -13,3 +11,4 @@ evasion_attack_algs:
 - ROAM
 - DICE
 - NABLA
+- DRL
