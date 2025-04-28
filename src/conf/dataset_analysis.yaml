@@ -1,4 +1,5 @@
-graph: DBLP
+graph: COND_MAT
 community_detection_algs:
 - SCD
 - LOC
+- DGC

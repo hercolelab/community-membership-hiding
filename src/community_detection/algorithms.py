@@ -2,6 +2,7 @@ from src.utils.utils import DetectionAlgorithmsNames
 from src.utils.utils import ExperimentHyps, iGraphRNG
 from typing import List, Optional
 from src.community_detection.extra_algs.locale.locale import ig_leiden_locale
+from src.community_detection.extra_algs.dgcluster.dgcluster import DGCluster
 from src.community_detection.extra_algs.scd import ig_SCD
 from cdlib import NodeClustering
 import igraph as ig
@@ -23,7 +24,7 @@ The algorithms are:
 - Scalable Community Detection
 - Leiden
 - Locale
-
+- DGCluster
 
 """
 
@@ -93,6 +94,8 @@ class CommunityDetectionAlg(object):
 			return self.compute_scd(graph, args)
 		elif self.alg_name == da.LOC.value:
 			return self.compute_loc(graph, args)
+		elif self.alg_name == da.DGC.value:
+			return self.compute_dgc(graph, args)
 		else:
 			raise ValueError("Invalid algorithm name")
 		
@@ -370,3 +373,27 @@ class CommunityDetectionAlg(object):
 			loc = ig_leiden_locale(graph, name, **args_loc)
 		
 		return loc
+	
+	def compute_dgc(self, graph: ig.Graph, args_dgc: dict) -> NodeClustering:
+		"""
+		Compute the DGCluster community detection algorithm
+
+		Parameters
+		----------
+		graph : ig.Graph
+			The graph to be clustered
+		args_dgc : dict
+			The arguments for the DGC algorithm
+
+		Returns
+		----------
+		NodeClustering
+			list of list of vertices in each cluster
+		"""
+		name = self.env.graph_name
+		if args_dgc is None:
+			dgc = DGCluster(graph, name)
+		else:
+			dgc = DGCluster(graph, name, **args_dgc)
+		
+		return dgc

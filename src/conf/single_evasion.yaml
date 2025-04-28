@@ -1,6 +1,6 @@
-graph: KAR
+graph: WORDS
 community_detection:
-- LOC
+- DGC
 target_node: 22
 budget_multiplier: 2
 similarity_threshold: 0.5

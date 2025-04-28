@@ -39,6 +39,7 @@ Available Community Detection Algorithms:
     - SCD:  Scalable Community Detection
     - LEID: Leiden
     - LOC: Locale
+    - DGC: DGCluster 
 
 Available Evasion Attack Algorithms:
     - RAND:  Random
@@ -57,9 +58,9 @@ Suggested Parameters:
 
 
 # ------ ATTACK CONFIGURATION ------ #
-graph_name = "KAR"
-#community_detection_alg = ["GRE", "LOUV", "WALK", "INF", "LAB", "EIG", "SCD",  "LOC"]
-community_detection_alg = ["LOC"]
+graph_name = "WORDS"
+community_detection_alg = ["GRE", "LOUV", "WALK", "INF", "LAB", "EIG", "SCD", "LOC", "DGC"]
+#community_detection_alg = ["DGC"]
 evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"]
 #evasion_attack_algs = ["DRL"]
 target_node = 22

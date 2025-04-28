@@ -74,6 +74,7 @@ class DetectionAlgorithmsNames(Enum):
     SPIN = "spinglass"
     SCD = "scd"
     LOC = "locale"
+    DGC = "dgcluster"
 
 class EvasionAlgorithmsNames(Enum):
     RAND = "random"

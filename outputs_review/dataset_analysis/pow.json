@@ -55,13 +55,18 @@
         },
         "scd": {
             "Number of Communities": 2478,
-            "Modularity": 0.091738,
-            "Time": 1.665341
+            "Modularity": 0.421579,
+            "Time": 1.757429
         },
         "locale": {
             "Number of Communities": 43,
-            "Modularity": 0.463273,
-            "Time": 0.074657
+            "Modularity": 0.940684,
+            "Time": 0.091223
+        },
+        "dgcluster": {
+            "Number of Communities": 664,
+            "Modularity": 0.550335,
+            "Time": 33.546627
         }
     }
 }

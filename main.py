@@ -30,6 +30,7 @@ Available Community Detection Algorithms:
     - SCD:  Scalable Community Detection
     - LEID: Leiden
     - LOC: Locale
+    - DGC: DGCluster
 
 Available Evasion Attack Algorithms:
     - RAND:  Random
@@ -49,8 +50,8 @@ Suggested Parameters:
 # ------ EXPERIMENTS CONFIGURATION ------ #
 graph_names = ["FB_75"]
 
-community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC"]
-#community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "SCD", "LOC"]
+community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
+#community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "SCD", "LOC", "DGC"]
 
 evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 
 #evasion_algs = ["DRL"]

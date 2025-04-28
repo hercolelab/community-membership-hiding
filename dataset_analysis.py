@@ -7,13 +7,18 @@ from hydra.core.hydra_config import HydraConfig
 import logging
 from src.utils.utils import Utils, iGraphRNG, DetectionAlgorithmsNames, DatasetNames, DatasetFullNames
 import os
+import scipy as sp
 import json
+from collections import defaultdict
 import hydra
 import yaml
+import torch
 from omegaconf import DictConfig
 import leidenalg as la
 from src.community_detection.extra_algs.scd import ig_SCD
-from community_detection.extra_algs.locale.locale import ig_leiden_locale
+from src.community_detection.extra_algs.locale.locale import ig_leiden_locale
+from src.community_detection.extra_algs.dgcluster.dgcluster import DGCluster
+from dgcluster_training import compute_fast_modularity, from_ig_graph_to_node2vec_geometric_data
 
 """ 
 Available Datasets (only one can be selected):
@@ -39,17 +44,18 @@ Available Community Detection Algorithms (multiple can be selected):
     - SPIN: Spinglass
     - SCD: Scalable Community Detection
     - LOC: Locale
+    - DGC: DGCluster
     
 """
 
 # ------ EXPERIMENT CONFIGURATION ------ #
-graph = "DBLP"
+graph = "COND_MAT"
 
 #detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "BTW", "SPIN", "SCD", "LOC"]
 # For large graphs, do not use "BTW" since in n^3 complexity
 #detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SPIN", "SCD", "LOC"]
 
-detection_algs = ["SCD", "LOC"]
+detection_algs = ["SCD", "LOC", "DGC"]
 
 
 
@@ -137,6 +143,7 @@ def main(cfg:DictConfig) -> None:
         "SPIN": G.community_spinglass,
         "SCD": ig_SCD(iterations=30),
         "LOC": ig_leiden_locale,
+        "DGC": DGCluster,
     }
 
     # Set the random number generator for reproducibility
@@ -159,25 +166,30 @@ def main(cfg:DictConfig) -> None:
                 algorithm.fit(G)
                 communities = algorithm.get_memberships()
             elif alg == "LOC":
-                communities = algorithm(G)
+                communities = algorithm(G, "KAR")
+            elif alg == "DGC":
+                communities = algorithm(G, graph)
             else:
                 communities = algorithm()
 
             end_time = time.time()
             detect_time = round(end_time - start_time, 6)
 
-            if alg in ["SCD", "LOC"]:
+            if alg in ["SCD", "LOC", "DGC"]:
                 memberships = []
-                for node, comm in communities.to_node_community_map().items():
+                temp_memberships = defaultdict(list, sorted(communities.to_node_community_map().items()))
+                for node, comm in temp_memberships.items():
                     memberships.append(comm[0])
             else:
-                memberships = communities.membership
+                memberships = communities.memberships
+
+            # Compute modularity
             modularity = G.modularity(memberships)
 
             log.info(f"- Algorithm {alg_name} executed correctly.")
 
             results["detection_algorithms"][alg_name] = {
-                "Number of Communities": len(communities) if alg not in ["SCD", "LOC"] else len(communities.communities),
+                "Number of Communities": len(communities) if alg not in ["SCD", "LOC", "DGC"] else len(communities.communities),
                 "Modularity": round(modularity, 6),
                 "Time": detect_time
             }
