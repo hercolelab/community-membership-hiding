@@ -67,20 +67,17 @@ def from_ig_graph_to_node2vec_geometric_data(graph: ig.Graph) -> Data:
     try:
         nx_graph = graph.to_networkx()
         
-        embedding_model = Node2Vec(
-            walk_number=DRL_agentHyps.WALK_NUMBER.value,
-            walk_length=DRL_agentHyps.WALK_LENGTH.value,
-            dimensions=DRL_agentHyps.EMBEDDING_DIM.value,
-        )
-        embedding_model.fit(nx_graph)
+        embedding_model = Node2Vec()
+        embedding_model.fit(nx_graph.copy())
         embedding = embedding_model.get_embedding()
         
         # Crea manualmente le strutture dati necessarie
         num_nodes = len(nx_graph.nodes())
-        x = torch.zeros((num_nodes, DRL_agentHyps.EMBEDDING_DIM.value))
+        x = torch.zeros((num_nodes, 128))
         for node in nx_graph.nodes():
             x[node] = torch.tensor(embedding[node])
         
+
         # Crea la lista degli archi
         edge_index = []
         for u, v in nx_graph.edges():
@@ -114,7 +111,7 @@ def DGCluster(graph: ig.Graph, graph_name: str) -> list:
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     graph_name = getattr(DatasetNames, graph_name).value
-    model_path = f"src/community_detection/extra_algs/dgcluster/dgc_models/model_{graph_name}_02_500_gcn_22.pth"
+    model_path = f"src/community_detection/extra_algs/dgcluster/models/model_{graph_name}_0.2_300_gcn_22.pth"
     # Convert the igraph graph to PyTorch Geometric Data object
     data = from_ig_graph_to_node2vec_geometric_data(graph)
     data = data.to(device)

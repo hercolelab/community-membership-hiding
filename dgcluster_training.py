@@ -118,7 +118,7 @@ def parse_args():
     args.add_argument('--lam', type=float, default=0.2)
     args.add_argument('--alp', type=float, default=0)
     args.add_argument('--device', type=str, default='cpu', choices=['cpu', 'cuda:0', 'cuda:1', 'cuda:2', 'cuda:3'])
-    args.add_argument('--epochs', type=int, default=500)
+    args.add_argument('--epochs', type=int, default=300)
     args.add_argument('--base_model', type=str, default='gcn', choices=['gcn', 'gat', 'gin', 'sage'])
     args.add_argument('--seed', type=int, default=22)
     args = args.parse_args()
@@ -130,11 +130,7 @@ def from_ig_graph_to_node2vec_geometric_data(graph: ig.Graph) -> Data:
     """
     nx_graph = graph.to_networkx()
     
-    embedding_model = Node2Vec(
-        walk_number=DRL_agentHyps.WALK_NUMBER.value,
-        walk_length=DRL_agentHyps.WALK_LENGTH.value,
-        dimensions=DRL_agentHyps.EMBEDDING_DIM.value,
-    )
+    embedding_model = Node2Vec()
     embedding_model.fit(nx_graph)
     embedding = embedding_model.get_embedding()
     
@@ -299,11 +295,11 @@ if __name__ == '__main__':
     seed = args.seed
 
     # if results exist then skip
-    if alp == 0.0 and os.path.exists(f'src/community_detection/extra_algs/dgcluster/results/results_{dataset_name}_{lam}_{epochs}_{base_model}_{seed}.pt'):
-        print(f'results/results_{dataset_name}_{lam}_{epochs}_{base_model}_{seed}.pt exists. Skipping...')
+    if alp == 0.0 and os.path.exists(f'src/community_detection/extra_algs/dgcluster/results/results_{dataset_name}_{lam}_{epochs}_{base_model}_{seed}.json'):
+        print(f'src/community_detection/extra_algs/dgcluster/results/results_{dataset_name}_{lam}_{epochs}_{base_model}_{seed}.pt exists. Skipping...')
         exit()
-    elif alp != 0.0 and os.path.exists(f'src/community_detection/extra_algs/dgcluster/results/results_{dataset_name}_{lam}_{alp}_{epochs}_{base_model}_{seed}.pt'):
-        print(f'results/results_{dataset_name}_{lam}_{alp}_{epochs}_{base_model}_{seed}.pt exists. Skipping...')
+    elif alp != 0.0 and os.path.exists(f'src/community_detection/extra_algs/dgcluster/results/results_{dataset_name}_{lam}_{alp}_{epochs}_{base_model}_{seed}.json'):
+        print(f'src/community_detection/extra_algs/dgcluster/results/results_{dataset_name}_{lam}_{alp}_{epochs}_{base_model}_{seed}.pt exists. Skipping...')
         exit()
 
     torch.manual_seed(seed)
