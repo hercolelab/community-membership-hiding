@@ -59,12 +59,12 @@ Suggested Parameters:
 
 # ------ ATTACK CONFIGURATION ------ #
 graph_name = "WORDS"
-community_detection_alg = ["GRE", "LOUV", "WALK", "INF", "LAB", "EIG", "SCD", "LOC", "DGC"]
-#community_detection_alg = ["DGC"]
-evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"]
-#evasion_attack_algs = ["DRL"]
-target_node = 22
-budget_multiplier = 2
+#community_detection_alg = ["GRE", "LOUV", "WALK", "INF", "LAB", "EIG", "SCD", "LOC", "DGC"]
+community_detection_alg = ["DGC"]
+#evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"]
+evasion_attack_algs = ["ROAM"]
+target_node = 111
+budget_multiplier = 0.5
 similarity_threshold = 0.5
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #

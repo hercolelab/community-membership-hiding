@@ -1,14 +1,8 @@
 graph: WORDS
 community_detection:
 - DGC
-target_node: 22
-budget_multiplier: 2
+target_node: 111
+budget_multiplier: 0.5
 similarity_threshold: 0.5
 evasion_attack_algs:
-- RAND
-- DEG
-- BETW
 - ROAM
-- DICE
-- NABLA
-- DRL

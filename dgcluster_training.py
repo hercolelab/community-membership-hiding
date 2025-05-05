@@ -12,7 +12,10 @@ import networkx as nx
 import argparse
 import os
 import json
-from karateclub import Node2Vec
+from torch_geometric.utils import from_networkx
+from torch_geometric.nn import Node2Vec
+from torch.optim import SparseAdam
+from torch_geometric.data import Data
 from enum import Enum
 import igraph as ig
 from torch_geometric.data import Data
@@ -118,7 +121,7 @@ def parse_args():
     args.add_argument('--lam', type=float, default=0.2)
     args.add_argument('--alp', type=float, default=0)
     args.add_argument('--device', type=str, default='cpu', choices=['cpu', 'cuda:0', 'cuda:1', 'cuda:2', 'cuda:3'])
-    args.add_argument('--epochs', type=int, default=300)
+    args.add_argument('--epochs', type=int, default=301)
     args.add_argument('--base_model', type=str, default='gcn', choices=['gcn', 'gat', 'gin', 'sage'])
     args.add_argument('--seed', type=int, default=22)
     args = args.parse_args()
@@ -128,28 +131,66 @@ def from_ig_graph_to_node2vec_geometric_data(graph: ig.Graph) -> Data:
     """
     Convert an igraph graph to a PyTorch Geometric Data object.
     """
+    
     nx_graph = graph.to_networkx()
+    nx_graph = nx_graph.to_undirected()
+    data = from_networkx(nx_graph)
+    edge_index = data.edge_index
+
+    # hyperparameters
+    embedding_dim = 128
+    walk_length   = 20
+    context_size  = 10
+    walks_per_node= 10
+    p, q          = 1.0, 1.0      # return / in-out parameters
+    num_negative_samples = 1
+    sparse = True                # use SparseAdam optimizer
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    model = Node2Vec(
+        edge_index,
+        embedding_dim=embedding_dim,
+        walk_length=walk_length,
+        context_size=context_size,
+        walks_per_node=walks_per_node,
+        p=p,
+        q=q,
+        num_negative_samples=num_negative_samples,
+        sparse=sparse
+    ).to(device)
+
+    loader = model.loader(batch_size=128, shuffle=True)
+    optimizer = SparseAdam(list(model.parameters()), lr=0.01)
+
+    def train_epoch():
+        model.train()
+        total_loss = 0
+
+        for pos_rw, neg_rw in loader:
+            pos_rw = pos_rw.to(device)
+            neg_rw = neg_rw.to(device)
+
+            optimizer.zero_grad()
+            loss = model.loss(pos_rw, neg_rw)
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+
+        return total_loss
+
+    # Run multiple epochs
+    for epoch in range(1, 11):
+        loss = train_epoch()
+        #print(f'Epoch {epoch:02d}, Loss: {loss:.4f}')
+
+    model.eval()
+    with torch.no_grad():
+        # shape [num_nodes, embedding_dim]
+        embeddings = model.embedding.weight.data.cpu()
     
-    embedding_model = Node2Vec()
-    embedding_model.fit(nx_graph)
-    embedding = embedding_model.get_embedding()
-    
-    # Crea manualmente le strutture dati necessarie
-    num_nodes = len(nx_graph.nodes())
-    x = torch.zeros((num_nodes, DRL_agentHyps.EMBEDDING_DIM.value))
-    for node in nx_graph.nodes():
-        x[node] = torch.tensor(embedding[node])
-    
-    # Crea la lista degli archi
-    edge_index = []
-    for u, v in nx_graph.edges():
-        edge_index.append([u, v])
-        edge_index.append([v, u])  # Aggiungi arco in entrambe le direzioni
-    
-    edge_index = torch.tensor(edge_index).t()
-    
-    # Crea l'oggetto Data
-    data = Data(x=x, edge_index=edge_index)
+    data = Data(x=embeddings, edge_index=edge_index)
     return data
     
 

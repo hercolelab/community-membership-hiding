@@ -10,14 +10,11 @@ graphs:
 - COND_MAT
 community_detection_algs:
 - GRE
-- LOUV
-- LEID
-- WALK
-- INF
-- LAB
-- SCD
-- LOC
+- DGC
 budget_multipliers:
+- 0.5
+- 1
 - 2
 similarity_thresholds:
 - 0.5
+seed: 22

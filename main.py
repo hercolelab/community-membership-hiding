@@ -1,6 +1,6 @@
 from src.graph_environment.env import GraphEnvironment
 from src.utils.cmh_experiment import CmhExperiment
-from src.utils.utils import Utils
+from src.utils.utils import Utils, ExperimentHyps
 from omegaconf import DictConfig
 import hydra
 import yaml
@@ -50,15 +50,15 @@ Suggested Parameters:
 # ------ EXPERIMENTS CONFIGURATION ------ #
 graph_names = ["COND_MAT"]
 
-community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC"]
-#community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "SCD", "LOC", "DGC"]
-#community_detection_algs = ["GRE", "DGC"]
+#community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SCD", "LOC", "DGC"]
+#community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
+community_detection_algs = ["GRE", "DGC"]
 
 evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 
 #evasion_algs = ["DRL"]
 
-#beta_factors = [0.5,1,2]
-beta_factors = [2]
+beta_factors = [0.5,1,2]
+#beta_factors = [0.5]
 
 #taus = [0.3, 0.5, 0.8]
 taus = [0.5]  
@@ -71,6 +71,7 @@ cfg["community_detection_algs"] = community_detection_algs
 cfg["evasion_attack_algs"] = evasion_algs
 cfg["budget_multipliers"] = beta_factors
 cfg["similarity_thresholds"] = taus
+cfg["seed"] = ExperimentHyps.seed.value
 with open("src/conf/experiment.yaml", "w") as file:
     yaml.dump(cfg, file, sort_keys=False)
 

@@ -83,10 +83,12 @@ class DiceHiding:
             if graph.are_connected(*edge):
                 graph.delete_edges([edge])
                 changes["remove"].append(edge)
+                steps += 1
             elif graph.are_connected(*edge[::-1]):
                 graph.delete_edges([edge[::-1]])
                 changes["remove"].append(edge[::-1])
-            steps += 1
+                steps += 1
+            
 
         # ---- STEP 2 ---- #
 
@@ -100,10 +102,11 @@ class DiceHiding:
                 if graph.are_connected(*edge):
                     graph.delete_edges([edge])
                     changes["remove"].append(edge)
+                    steps += 1
                 elif graph.are_connected(*edge[::-1]):
                     graph.delete_edges([edge[::-1]])
                     changes["remove"].append(edge[::-1])
-                steps += 1
+                    steps += 1        
             return graph, steps, changes
                 
         sorted_extra_nodes: List[int] = sorted(extra_nodes, key=lambda x: graph.degree(x), reverse=True)
