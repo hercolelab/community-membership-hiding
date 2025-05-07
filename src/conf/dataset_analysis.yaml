@@ -1,5 +1,11 @@
-graph: COND_MAT
+graph: KAR
 community_detection_algs:
+- GRE
+- LOUV
+- LEID
+- WALK
+- INF
+- SPIN
 - SCD
 - LOC
 - DGC

@@ -49,13 +49,11 @@ Available Community Detection Algorithms (multiple can be selected):
 """
 
 # ------ EXPERIMENT CONFIGURATION ------ #
-graph = "COND_MAT"
+graph = "KAR"
 
 #detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "BTW", "SPIN", "SCD", "LOC"]
 # For large graphs, do not use "BTW" since in n^3 complexity
-#detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SPIN", "SCD", "LOC"]
-
-detection_algs = ["SCD", "LOC", "DGC"]
+detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "SPIN", "SCD", "LOC", "DGC"]
 
 
 
@@ -158,40 +156,54 @@ def main(cfg:DictConfig) -> None:
         start_time = time.time()
         
         try:
-            if alg in ["GRE", "WALK", "BTW"]:
-                communities = algorithm().as_clustering()
-            elif alg == "LEID":
-                communities = algorithm(G, la.ModularityVertexPartition)
-            elif alg == "SCD":
-                algorithm.fit(G)
-                communities = algorithm.get_memberships()
-            elif alg == "LOC":
-                communities = algorithm(G, "KAR")
-            elif alg == "DGC":
-                communities = algorithm(G, graph)
-            else:
-                communities = algorithm()
 
-            end_time = time.time()
-            detect_time = round(end_time - start_time, 6)
+            avg_modularity = 0
+            avg_communities = 0
+            avg_time = 0
 
-            if alg in ["SCD", "LOC", "DGC"]:
-                memberships = []
-                temp_memberships = defaultdict(list, sorted(communities.to_node_community_map().items()))
-                for node, comm in temp_memberships.items():
-                    memberships.append(comm[0])
-            else:
-                memberships = communities.memberships
+            for i in range(10):
 
-            # Compute modularity
-            modularity = G.modularity(memberships)
+                if alg in ["GRE", "WALK", "BTW"]:
+                    communities = algorithm().as_clustering()
+                elif alg == "LEID":
+                    communities = algorithm(G, la.ModularityVertexPartition)
+                elif alg == "SCD":
+                    algorithm.fit(G)
+                    communities = algorithm.get_memberships()
+                elif alg == "LOC":
+                    communities = algorithm(G, "KAR")
+                elif alg == "DGC":
+                    communities = algorithm(G, graph)
+                else:
+                    communities = algorithm()
+
+                end_time = time.time()
+                detect_time = round(end_time - start_time, 6)
+                avg_time += detect_time
+
+                if alg in ["SCD", "LOC", "DGC"]:
+                    memberships = []
+                    temp_memberships = defaultdict(list, sorted(communities.to_node_community_map().items()))
+                    for node, comm in temp_memberships.items():
+                        memberships.append(comm[0])
+                else:
+                    memberships = communities.membership
+
+                # Compute modularity
+                modularity = G.modularity(memberships)
+                avg_modularity += modularity
+                # Compute number of communities
+                if alg not in ["SCD", "LOC", "DGC"]:
+                    avg_communities += len(communities)
+                else:
+                    avg_communities += len(communities.communities)
 
             log.info(f"- Algorithm {alg_name} executed correctly.")
 
             results["detection_algorithms"][alg_name] = {
-                "Number of Communities": len(communities) if alg not in ["SCD", "LOC", "DGC"] else len(communities.communities),
-                "Modularity": round(modularity, 6),
-                "Time": detect_time
+                "Number of Communities": int(avg_communities / 10),
+                "Modularity": round(avg_modularity / 10, 6),
+                "Time": round(avg_time / 10, 6)
             }
 
         except ig.InternalError as e:
