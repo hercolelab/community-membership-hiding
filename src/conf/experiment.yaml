@@ -7,7 +7,7 @@ evasion_attack_algs:
 - NABLA
 - DRL
 graphs:
-- COND_MAT
+- FB_75
 community_detection_algs:
 - GRE
 - LOUV
