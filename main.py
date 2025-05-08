@@ -48,7 +48,7 @@ Suggested Parameters:
 """
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-graph_names = ["POW"]
+graph_names = ["COND_MAT"]
 
 #community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SCD", "LOC", "DGC"]
 community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
@@ -57,8 +57,8 @@ community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", 
 #evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 
 evasion_algs = ["NABLA", "DICE"]
 
-beta_factors = [0.5,1,2]
-#beta_factors = [1]
+#beta_factors = [0.5,1,2]
+beta_factors = [2]
 
 #taus = [0.3, 0.5, 0.8]
 taus = [0.5]  
