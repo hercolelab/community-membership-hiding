@@ -11,27 +11,27 @@
         "greedy": {
             "Number of Communities": 12,
             "Modularity": 0.547005,
-            "Time": 0.003425
+            "Time": 0.019481
         },
         "louvain": {
             "Number of Communities": 9,
-            "Modularity": 0.575221,
-            "Time": 0.001988
+            "Modularity": 0.5871,
+            "Time": 0.011582
         },
         "leiden": {
-            "Number of Communities": 10,
-            "Modularity": 0.594345,
-            "Time": 0.016037
+            "Number of Communities": 8,
+            "Modularity": 0.596251,
+            "Time": 0.099722
         },
         "walktrap": {
             "Number of Communities": 42,
             "Modularity": 0.561373,
-            "Time": 0.021912
+            "Time": 0.173633
         },
         "infomap": {
             "Number of Communities": 75,
-            "Modularity": 0.511637,
-            "Time": 0.736294
+            "Modularity": 0.512755,
+            "Time": 4.431094
         },
         "label_propagation": {
             "Number of Communities": 13,
@@ -49,24 +49,24 @@
             "Time": 27.701101
         },
         "spinglass": {
-            "Number of Communities": 11,
-            "Modularity": 0.598055,
-            "Time": 10.40925
+            "Number of Communities": 12,
+            "Modularity": 0.597755,
+            "Time": 60.560142
         },
         "scd": {
             "Number of Communities": 445,
             "Modularity": 0.20958,
-            "Time": 0.516776
+            "Time": 2.726149
         },
         "locale": {
-            "Number of Communities": 10,
-            "Modularity": 0.598492,
-            "Time": 0.066947
+            "Number of Communities": 9,
+            "Modularity": 0.596951,
+            "Time": 0.217446
         },
         "dgcluster": {
-            "Number of Communities": 7,
-            "Modularity": 0.550445,
-            "Time": 7.599013
+            "Number of Communities": 5,
+            "Modularity": 0.318099,
+            "Time": 2.127556
         }
     }
 }

@@ -49,9 +49,9 @@ Available Community Detection Algorithms (multiple can be selected):
 """
 
 # ------ EXPERIMENT CONFIGURATION ------ #
-graph = "KAR"
+graph = "COND_MAT" 
 
-#detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "BTW", "SPIN", "SCD", "LOC"]
+#detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "BTW", "SPIN", "SCD", "LOC", "DGC"]
 # For large graphs, do not use "BTW" since in n^3 complexity
 detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "SPIN", "SCD", "LOC", "DGC"]
 
@@ -144,10 +144,6 @@ def main(cfg:DictConfig) -> None:
         "DGC": DGCluster,
     }
 
-    # Set the random number generator for reproducibility
-    custom_rng = iGraphRNG()
-    ig.set_random_number_generator(custom_rng)
-
     for alg in detection_algs:
         
         alg_name = getattr(DetectionAlgorithmsNames, alg).value
@@ -162,6 +158,10 @@ def main(cfg:DictConfig) -> None:
             avg_time = 0
 
             for i in range(10):
+
+                # Set the random number generator for reproducibility
+                custom_rng = iGraphRNG(np.random.randint(0, 2**32 - 1))
+                ig.set_random_number_generator(custom_rng)
 
                 if alg in ["GRE", "WALK", "BTW"]:
                     communities = algorithm().as_clustering()

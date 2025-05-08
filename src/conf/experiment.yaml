@@ -1,13 +1,8 @@
 evasion_attack_algs:
-- RAND
-- DEG
-- BETW
-- ROAM
-- DICE
 - NABLA
-- DRL
+- DICE
 graphs:
-- FB_75
+- POW
 community_detection_algs:
 - GRE
 - LOUV
@@ -19,6 +14,8 @@ community_detection_algs:
 - LOC
 - DGC
 budget_multipliers:
+- 0.5
+- 1
 - 2
 similarity_thresholds:
 - 0.5

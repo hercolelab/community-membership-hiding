@@ -3,6 +3,7 @@ from scipy.io import mmread
 import igraph as ig
 from cdlib import NodeClustering
 from collections import defaultdict
+from src.utils.utils import ExperimentHyps
 import os
 import numpy as np
 
@@ -29,7 +30,9 @@ def ig_leiden_locale(graph: ig.Graph, name: str) -> None:
     dir_path = f"src/community_detection/extra_algs/locale/temp_graphs/"
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-    file_name = f"temp_graph_{name}.mtx"
+
+    timestamp = int(np.floor(os.times()[4]))
+    file_name = f"temp_graph_{name}_{timestamp}_{ExperimentHyps.seed.value}.mtx"
     filepath = os.path.join(dir_path, file_name)
 
     n = graph.vcount()

@@ -11,27 +11,27 @@
         "greedy": {
             "Number of Communities": 7,
             "Modularity": 0.294696,
-            "Time": 0.000243
+            "Time": 0.001085
         },
         "louvain": {
             "Number of Communities": 7,
-            "Modularity": 0.293996,
-            "Time": 0.000366
+            "Modularity": 0.295116,
+            "Time": 0.001692
         },
         "leiden": {
-            "Number of Communities": 6,
-            "Modularity": 0.302829,
-            "Time": 0.003569
+            "Number of Communities": 7,
+            "Modularity": 0.296664,
+            "Time": 0.015551
         },
         "walktrap": {
             "Number of Communities": 25,
             "Modularity": 0.216213,
-            "Time": 0.000777
+            "Time": 0.003969
         },
         "infomap": {
             "Number of Communities": 2,
             "Modularity": 0.009235,
-            "Time": 0.036574
+            "Time": 0.166228
         },
         "label_propagation": {
             "Number of Communities": 1,
@@ -49,24 +49,24 @@
             "Time": 0.101571
         },
         "spinglass": {
-            "Number of Communities": 8,
-            "Modularity": 0.310721,
-            "Time": 1.993095
+            "Number of Communities": 7,
+            "Modularity": 0.310231,
+            "Time": 10.08083
         },
         "scd": {
             "Number of Communities": 45,
             "Modularity": 0.151712,
-            "Time": 0.065819
+            "Time": 0.353914
         },
         "locale": {
-            "Number of Communities": 7,
-            "Modularity": 0.308512,
-            "Time": 0.016921
+            "Number of Communities": 6,
+            "Modularity": 0.310494,
+            "Time": 0.032157
         },
         "dgcluster": {
             "Number of Communities": 4,
-            "Modularity": 0.206137,
-            "Time": 1.045503
+            "Modularity": 0.087889,
+            "Time": 0.826808
         }
     }
 }

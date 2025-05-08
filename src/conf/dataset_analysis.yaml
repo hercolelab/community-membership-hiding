@@ -1,4 +1,4 @@
-graph: KAR
+graph: COND_MAT
 community_detection_algs:
 - GRE
 - LOUV

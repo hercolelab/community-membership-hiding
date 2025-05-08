@@ -57,7 +57,7 @@ class DiceHiding:
         }
         steps: int = 0
 
-        intra_changes: int = int(self.budget * self.dice_coefficient) # d changes
+        intra_changes: int = 1 # d changes
         extra_changes: int = self.budget - intra_changes
         if (intra_changes + extra_changes) != self.budget:
             raise ValueError("The sum of intra_changes and extra_changes must be equal to the budget")

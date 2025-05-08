@@ -45,6 +45,11 @@ class nablaCMH():
         self.a_u_tilde[self.u] = torch.Tensor([0])
         self.a_u_tilde = self.a_u_tilde.to(self.device)
 
+        # Variables to store a valid perturbation
+        # This is returned if in the end there are no changes
+        self.last_chance = {}
+
+
     
     # ============================================================================= #
     #                                MAIN FUNCTION                                  #
@@ -85,6 +90,7 @@ class nablaCMH():
             "remove": [],
             "add": [],
         }
+        save_first = False
         #Perturbation vector
         x_hat, optimizer = self.initialize_perturbation_vector(count_reinit, self.device)
         tp: Tensor = torch.tensor(0.5, device=self.device)
@@ -126,6 +132,13 @@ class nablaCMH():
                 new_community_u = self.env.get_community(new_communities)
                 goal = self.env.get_evasion_goal(new_community_u, None)
                 n_changes = 0 #reset changes
+                if not save_first:
+                    changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
+                    self.last_chance = {
+                        "graph": g_prime,
+                        "budget_used": budget_used,
+                        "changes": changes,
+                    }
             elif n_changes > 0 and (budget_used + n_changes > self.budget):
                 budget_used += n_changes
                 
@@ -153,6 +166,34 @@ class nablaCMH():
                 if self.reinitialization: 
                     count_reinit += 1
                     x_hat, optimizer = self.initialize_perturbation_vector(count_reinit, self.device) 
+                    if not save_first:
+                        changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
+                        g_temp: ig.Graph = self.graph.copy()
+                        temp_changes: dict = { 
+                            "remove": [],
+                            "add": [],
+                        }
+                        count_changes = 0
+                        for e in changes["removed"]:
+                            if g_temp.are_connected(*e) or g_temp.are_connected(*e[::-1]):
+                                if count_changes < self.budget:
+                                    temp_changes["remove"].append(e)
+                                    g_temp.delete_edges([e])
+                                    count_changes += 1
+                        for e in changes["added"]:
+                            if not g_temp.are_connected(*e) and not g_temp.are_connected(*e[::-1]):
+                                if count_changes < self.budget:
+                                    temp_changes["add"].append(e)
+                                    g_temp.add_edges([e])
+                                    count_changes += 1
+                        # Save the first perturbation
+                        self.last_chance = {
+                            "graph": g_temp,
+                            "budget_used": count_changes,
+                            "changes": temp_changes,
+                        }
+
+                    save_first = True
                     # Restore parameters for evasion loop
                     goal = 0 
                     budget_used=0
@@ -170,18 +211,22 @@ class nablaCMH():
                     budget_used=0
                     history.append(self.a_u)
                     g_prime = self.graph.copy()
+                    save_first = True
                 else: 
                     break
-
-        changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
         
-        del x_hat, p_hat, p, a_new, history
-
         if verbose_iterations:
             nablaCMH_additional_results["count_reinit"] = count_reinit
-        
-        return g_prime, budget_used, changes, nablaCMH_additional_results
-    
+
+        if goal==0 and budget_used < int(self.budget/2):
+            del x_hat, p_hat, p, a_new, history
+            return self.last_chance["graph"], self.last_chance["budget_used"], self.last_chance["changes"], nablaCMH_additional_results
+        else: 
+            changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
+            del x_hat, p_hat, p, a_new, history
+            return g_prime, budget_used, changes, nablaCMH_additional_results
+
+
     # ============================================================================= #
     #                                  LOSS FUNCTIONS                               #
     # ============================================================================= #
