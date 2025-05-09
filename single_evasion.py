@@ -63,7 +63,7 @@ graph_name = "WORDS"
 community_detection_alg = ["DGC"]
 #evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"]
 evasion_attack_algs = ["ROAM"]
-target_node = 111
+target_node = 112
 budget_multiplier = 0.5
 similarity_threshold = 0.5
 
