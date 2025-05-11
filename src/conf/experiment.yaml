@@ -2,7 +2,7 @@ evasion_attack_algs:
 - NABLA
 - DICE
 graphs:
-- COND_MAT
+- FB_75
 community_detection_algs:
 - GRE
 - LOUV
@@ -17,4 +17,4 @@ budget_multipliers:
 - 2
 similarity_thresholds:
 - 0.5
-seed: 22
+seed: 2025
