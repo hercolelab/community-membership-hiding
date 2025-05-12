@@ -48,20 +48,20 @@ Suggested Parameters:
 """
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-graph_names = ["FB_75"]
+graph_names = ["VOTE"]
 
 #community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SCD", "LOC", "DGC"]
 community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
 
 
-#evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 
-evasion_algs = ["NABLA", "DICE"]
+evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 
+#evasion_algs = ["NABLA", "DICE"]
 
-#beta_factors = [0.5,1,2]
-beta_factors = [2]
+beta_factors = [0.5,1,2]
+#beta_factors = [2]
 
 #taus = [0.3, 0.5, 0.8]
-taus = [0.5]  
+taus = [0.3,0.8]  
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #
 with open("src/conf/experiment.yaml", "r") as file:

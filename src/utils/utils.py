@@ -89,7 +89,7 @@ class EvasionAlgorithmsNames(Enum):
 class ExperimentHyps(Enum):
     """Enum class for the experiment hyperparameters"""
 
-    seed: int = 2025
+    seed: int = 42
     target_community_size: List[int] = [0.2,0.5,0.8]
     max_steps_community_eval: int = 100
 

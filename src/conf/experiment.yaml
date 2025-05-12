@@ -1,8 +1,13 @@
 evasion_attack_algs:
-- NABLA
+- RAND
+- DEG
+- BETW
+- ROAM
 - DICE
+- NABLA
+- DRL
 graphs:
-- FB_75
+- VOTE
 community_detection_algs:
 - GRE
 - LOUV
@@ -14,7 +19,10 @@ community_detection_algs:
 - LOC
 - DGC
 budget_multipliers:
+- 0.5
+- 1
 - 2
 similarity_thresholds:
-- 0.5
-seed: 2025
+- 0.3
+- 0.8
+seed: 42
