@@ -92,9 +92,13 @@ class nablaCMH():
         }
         save_first = False
         #Perturbation vector
-        x_hat, optimizer = self.initialize_perturbation_vector(count_reinit, self.device)
-        tp: Tensor = torch.tensor(0.5, device=self.device)
-        tn: Tensor = torch.tensor(-0.5, device=self.device)
+        #x_hat, optimizer = self.initialize_perturbation_vector(count_reinit, self.device)
+        p_hat = torch.zeros_like(self.a_u, dtype=torch.float, requires_grad=True, device=self.device)
+        optimizer = optim.Adam([p_hat], lr=self.lr)
+        eps = 1e-4
+        logit_init = torch.logit(self.a_u.float().clamp(eps, 1-eps))
+        #tp: Tensor = torch.tensor(0.5, device=self.device)
+        #tn: Tensor = torch.tensor(-0.5, device=self.device)
 
         if verbose_iterations:
             nablaCMH_additional_results = {
@@ -106,125 +110,80 @@ class nablaCMH():
         else:
             nablaCMH_additional_results = None
 
+        list_changes = []
 
         # ---- Evasion Loop ---- #
 
         while goal==0 and t < self.T:
             
             #Perturbation update
-            p_hat: Tensor = torch.tanh(x_hat)
-            p: Tensor = nablaUtils.threshold_tanh(p_hat.detach(),tp,tn)
-            a_new: Tensor = nablaUtils.clamp(self.a_u + p)
+            #p_hat: Tensor = torch.tanh(x_hat)
+            #p: Tensor = nablaUtils.threshold_tanh(p_hat.detach(),tp,tn)
+            h = torch.sigmoid(logit_init + p_hat)
+            #a_new: Tensor = nablaUtils.clamp(self.a_u + p)
+
+            a_new = (h > 0.5).int()
             history.append(a_new)
+
+            #l_decept = self.loss_hide(self.a_u, p_hat, self.a_u_tilde)
+            #l_dist = self.loss_dist(p_hat)
+            #loss = l_decept + self.lambd * l_dist
+            loss = torch.nn.functional.binary_cross_entropy(h,self.a_u_tilde, reduction='mean')
+            loss = loss.to(self.device)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            t += 1
+            
             edges_changed, n_changes = nablaUtils.get_changes(history[-2], history[-1], self.u)
 
-            if n_changes > 0 and (budget_used + n_changes <= self.budget):
+            if n_changes > 0:
                 budget_used += n_changes
                 #edge_list = g_prime.get_edgelist() # inefficient
                 #updated_edge_list = nablaUtils.update_edge_list(edge_list,edges_changed) # inefficient
                 for e in edges_changed["removed"]:
                     if g_prime.are_connected(*e) or g_prime.are_connected(*e[::-1]):
                         g_prime.delete_edges([e])
+                        list_changes.append(e)
                 for e in edges_changed["added"]:
                     if not g_prime.are_connected(*e) and not g_prime.are_connected(*e[::-1]):
                         g_prime.add_edges([e])
+                        list_changes.append(e)
                 new_communities = da_train.community_detection(g_prime)
                 new_community_u = self.env.get_community(new_communities)
                 goal = self.env.get_evasion_goal(new_community_u, None)
                 n_changes = 0 #reset changes
-                if not save_first:
-                    changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
-                    self.last_chance = {
-                        "graph": g_prime,
-                        "budget_used": budget_used,
-                        "changes": changes,
-                    }
-            elif n_changes > 0 and (budget_used + n_changes > self.budget):
-                budget_used += n_changes
                 
-
-            l_decept = self.loss_hide(self.a_u, p_hat, self.a_u_tilde)
-            l_dist = self.loss_dist(p_hat)
-            loss = l_decept + self.lambd * l_dist
-            loss = loss.to(self.device)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            t += 1
-
-            if verbose_iterations:
-                # Save results of each iteration
-                nablaCMH_additional_results["iterations"].append({
-                    "t": t,
-                    "loss": loss.item(),
-                    "Goal": goal,
-                    "Budget used": budget_used,
-                    "Changes": edges_changed,
-                })
             
             if budget_used > self.budget:
-                if self.reinitialization: 
-                    count_reinit += 1
-                    x_hat, optimizer = self.initialize_perturbation_vector(count_reinit, self.device) 
-                    if not save_first:
-                        changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
-                        g_temp: ig.Graph = self.graph.copy()
-                        temp_changes: dict = { 
-                            "remove": [],
-                            "add": [],
-                        }
-                        count_changes = 0
-                        for e in changes["removed"]:
-                            if g_temp.are_connected(*e) or g_temp.are_connected(*e[::-1]):
-                                if count_changes < self.budget:
-                                    temp_changes["remove"].append(e)
-                                    g_temp.delete_edges([e])
-                                    count_changes += 1
-                        for e in changes["added"]:
-                            if not g_temp.are_connected(*e) and not g_temp.are_connected(*e[::-1]):
-                                if count_changes < self.budget:
-                                    temp_changes["add"].append(e)
-                                    g_temp.add_edges([e])
-                                    count_changes += 1
-                        # Save the first perturbation
-                        self.last_chance = {
-                            "graph": g_temp,
-                            "budget_used": count_changes,
-                            "changes": temp_changes,
-                        }
+                g_prime = self.graph.copy()
+                top_beta_changes = {
+                    "remove": [],
+                    "add": []
+                }
+                diff_indices = torch.where(self.a_u != a_new)[0]
+                diff_scores = torch.abs(h[diff_indices] - self.a_u[diff_indices].float())
+                top_indices = diff_indices[torch.argsort(diff_scores, descending=True)[:self.budget]]
 
-                    save_first = True
-                    # Restore parameters for evasion loop
-                    goal = 0 
-                    budget_used=0
-                    history.append(self.a_u)
-                    g_prime = self.graph.copy()
-                else: 
-                    g_prime = self.graph
-                    break
+                for idx in top_indices:
+                    if self.a_u[idx] == 1:
+                        e = (self.u, idx.item())
+                        top_beta_changes["remove"].append(e)
+                        if g_prime.are_connected(*e) or g_prime.are_connected(*e[::-1]):
+                            g_prime.delete_edges([e])
+                    else:
+                        e = (self.u, idx.item())
+                        top_beta_changes["add"].append(e)
+                        if not g_prime.are_connected(*e) and not g_prime.are_connected(*e[::-1]):
+                            g_prime.add_edges([e])                
 
-            if budget_used == self.budget and goal==0:
-                if self.reinitialization: 
-                    count_reinit += 1
-                    x_hat, optimizer = self.initialize_perturbation_vector(count_reinit, self.device)
-                    # Restore parameters for evasion loop
-                    budget_used=0
-                    history.append(self.a_u)
-                    g_prime = self.graph.copy()
-                    save_first = True
-                else: 
-                    break
+                return g_prime, self.budget, top_beta_changes, nablaCMH_additional_results
+            
+        changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
+        return g_prime, budget_used, changes, nablaCMH_additional_results
+                
         
-        if verbose_iterations:
-            nablaCMH_additional_results["count_reinit"] = count_reinit
-
-        if goal==0 and budget_used < int(self.budget/2):
-            del x_hat, p_hat, p, a_new, history
-            return self.last_chance["graph"], self.last_chance["budget_used"], self.last_chance["changes"], nablaCMH_additional_results
-        else: 
-            changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
-            del x_hat, p_hat, p, a_new, history
-            return g_prime, budget_used, changes, nablaCMH_additional_results
+        
 
 
     # ============================================================================= #
@@ -288,8 +247,9 @@ class nablaCMH():
         L = torch.ones(n)
         L_in = torch.LongTensor(self.env.nabla_cmh_target_community)
         L[L_in] = torch.Tensor([0])
-        scores = torch.Tensor(nablaUtils.compute_promising_scores(self.env,self.promising_actions_coeffs))*0.5
-        prom_actions = torch.where(L == 1, 0.5 + scores, 0.5 - scores)
+        scores = torch.Tensor(nablaUtils.compute_promising_scores(self.env,self.promising_actions_coeffs))
+        #prom_actions = torch.where(L == 1, 0.5 + scores/2, 0.5 - scores/2)
+        prom_actions = self.a_u + scores * (L - self.a_u)
         return prom_actions
     
 

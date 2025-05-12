@@ -1,20 +1,13 @@
 evasion_attack_algs:
 - NABLA
-- DICE
+- BETW
 graphs:
-- COND_MAT
+- POW
 community_detection_algs:
 - GRE
-- LOUV
 - LEID
-- WALK
-- INF
-- LAB
-- SCD
-- LOC
-- DGC
 budget_multipliers:
-- 2
+- 1
 similarity_thresholds:
 - 0.5
 seed: 22
