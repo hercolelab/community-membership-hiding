@@ -189,7 +189,7 @@ class GraphEnvironment(object):
         self.community_detection_algs = [
             CommunityDetectionAlg(alg_name, self) for alg_name in self.community_detection_alg_names_output
         ]
-        self.nabla_cmh_alg = CommunityDetectionAlg(getattr(DetectionAlgorithmsNames, "GRE").value, self)
+        self.nabla_cmh_alg = CommunityDetectionAlg(getattr(DetectionAlgorithmsNames, "LEID").value, self)
         self.original_communities = [
             alg.community_detection(self.original_graph) for alg in self.community_detection_algs
         ]

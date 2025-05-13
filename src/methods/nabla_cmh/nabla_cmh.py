@@ -24,7 +24,7 @@ class nablaCMH():
         self.device: torch.device = self.env.device
         self.seed: int = self.env.seed
         self.reinitialization: bool = True # to choose if allow the method to reinit optimization if goal not achieved
-        self.training_alg: str = "greedy"
+        self.training_alg: str = "leiden"
 
         # Hyperparameters
         self.T, self.lr, self.lambd, self.promising_actions_coeffs = get_hyperparams(
@@ -219,8 +219,12 @@ class nablaCMH():
             nablaCMH_additional_results["count_reinit"] = count_reinit
 
         if goal==0 and budget_used < int(self.budget/2):
+            changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
             del x_hat, p_hat, p, a_new, history
-            return self.last_chance["graph"], self.last_chance["budget_used"], self.last_chance["changes"], nablaCMH_additional_results
+            if "graph" in self.last_chance:
+                return self.last_chance["graph"], self.last_chance["budget_used"], self.last_chance["changes"], nablaCMH_additional_results
+            else:
+                return g_prime, budget_used, changes, nablaCMH_additional_results
         else: 
             changes, _ = nablaUtils.get_changes(history[0], history[-1], self.u)
             del x_hat, p_hat, p, a_new, history

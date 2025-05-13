@@ -39,7 +39,7 @@ def exp(env: GraphEnvironment, save_path: str, wandb_cfg = None):
 
         # Problem Configuration
         dataset_name = env.graph_name_output
-        train_alg = "greedy"
+        train_alg = "leiden"
         tau = env.tau
         c_beta = env.budget_multiplier
 
@@ -115,10 +115,10 @@ def main(cfg: DictConfig) -> None:
     save_path = HydraConfig.get().runtime.output_dir
 
     # ------ EXPERIMENTS CONFIGURATION ------ #
-    graph_name = "FB_75"
-    alg = ["GRE"]
+    graph_name = "COND_MAT"
+    alg = ["LEID"]
     tau = 0.5
-    c_beta = 2
+    c_beta = 1
 
     # ------ UPDATE HYDRA CONFIG FILE ------ #
     with open("src/conf/hyp_search.yaml", "r") as file:
@@ -177,7 +177,7 @@ def main(cfg: DictConfig) -> None:
 
 
     sweep_id = wandb.sweep(sweep_config, project=f"hyp_search {graph_name} {alg[0]} tau_{tau} beta_{c_beta}")
-    wandb.agent(sweep_id, function=lambda: exp(env,save_path), count=500)
+    wandb.agent(sweep_id, function=lambda: exp(env,save_path), count=150)
 
 
 if __name__ == "__main__":
