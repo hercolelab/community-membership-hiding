@@ -38,7 +38,6 @@ class nablaCMH():
         self.neighbors: Tensor = torch.LongTensor(self.graph.neighbors(self.u))
         self.a_u: Tensor = torch.zeros(self.graph.vcount(), dtype=torch.int)
         self.a_u[self.neighbors] = 1
-        self.a_u = self.a_u.to(self.device)
 
         # Promising actions
         self.a_u_tilde: Tensor = self.promising_actions()
@@ -82,6 +81,7 @@ class nablaCMH():
         budget_used: int = 0
         goal: int = 0
         count_reinit: int = 0
+        self.a_u = self.a_u.to(self.device)
         history: List[Tensor] = [self.a_u]
         edges_changed: dict = {}
         # Counterfactual graph

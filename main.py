@@ -48,14 +48,14 @@ Suggested Parameters:
 """
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-graph_names = ["POW"]
+graph_names = ["KAR"]
 
 #community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SCD", "LOC", "DGC"]
-community_detection_algs = ["GRE", "LEID"]
+community_detection_algs = ["GRE", "LEID", "WALK"]
 
 
 #evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 
-evasion_algs = ["NABLA", "BETW"]
+evasion_algs = ["NABLA", "DICE"]
 
 #beta_factors = [0.5,1,2]
 beta_factors = [1]

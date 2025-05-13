@@ -47,7 +47,11 @@ def exp(env: GraphEnvironment, save_path: str, wandb_cfg = None):
         evader_hyps = hyps[dataset_name][f"training_{train_alg}"]
         evader_hyps[f"tau_{tau}"][f"betaFactor_{c_beta}"]["T"] = wandb_cfg.max_it
         evader_hyps[f"tau_{tau}"][f"betaFactor_{c_beta}"]["lr"] = wandb_cfg.lr
+        raw_weights = np.array([wandb_cfg.p1, wandb_cfg.p2, wandb_cfg.p3, wandb_cfg.p4])
+        coeffs = softmax(raw_weights)
+        evader_hyps[f"tau_{tau}"][f"betaFactor_{c_beta}"]["promising_action_coeffs"] = coeffs
         log.info(f"Evader configuration: {evader_hyps[f'tau_{tau}'][f'betaFactor_{c_beta}']}")
+
 
         # Initialize the test class
         experiment = CmhExperiment(evasion_algs=["NABLA"], env=env)
@@ -101,7 +105,7 @@ def exp(env: GraphEnvironment, save_path: str, wandb_cfg = None):
 # - LOUV (louvain), 
 # - WALK (walktrap)
 #
-# Suggested budget multiplier: [0.5,1,2]
+# Suggested budget multiplier: [0.5,1,2]    
 # Suggested similarity threshold: [0.3,0.5,0.8]
 
 
@@ -139,7 +143,7 @@ def main(cfg: DictConfig) -> None:
 
 
     sweep_config = {
-        "method": "grid",  
+        "method": "bayes",  
         "metric": {
             "name": "f1",  
             "goal": "maximize"
@@ -147,17 +151,28 @@ def main(cfg: DictConfig) -> None:
         "parameters": {
             # --- GD hyperparameters --- #
             "max_it": {
-                "values": [100, 500, 1000]
+                "distribution": "q_uniform",  
+                "min": 300,
+                "max": 500,
+                "q": 10
             },
             "lr": {
-                "values": [0.0001, 0.001, 0.01, 0.1]
+                "distribution": "log_uniform",  
+                "min": np.log(0.02),
+                "max": np.log(0.1)
             },
+            
+            # --- Promising actions weights --- #
+            "p1": {"distribution": "normal", "mu": 0, "sigma": 1},  
+            "p2": {"distribution": "normal", "mu": 0, "sigma": 1},
+            "p3": {"distribution": "normal", "mu": 0, "sigma": 1},
+            "p4": {"distribution": "normal", "mu": 0, "sigma": 1},
         }
     }
 
 
     sweep_id = wandb.sweep(sweep_config, project=f"hyp_search2.0 {graph_name} {alg[0]} tau_{tau} beta_{c_beta}")
-    wandb.agent(sweep_id, function=lambda: exp(env,save_path))
+    wandb.agent(sweep_id, function=lambda: exp(env,save_path), count=150)
 
 
 if __name__ == "__main__":

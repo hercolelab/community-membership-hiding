@@ -1,11 +1,12 @@
 evasion_attack_algs:
 - NABLA
-- BETW
+- DICE
 graphs:
-- POW
+- KAR
 community_detection_algs:
 - GRE
 - LEID
+- WALK
 budget_multipliers:
 - 1
 similarity_thresholds:

@@ -1,7 +1,7 @@
-graph: FB_75
+graph: KAR
 community_detection_alg:
 - GRE
 evasion_attack_alg: NABLA
-budget_multiplier: 2
+budget_multiplier: 1
 similarity_threshold: 0.5
 similarity_thresholds: 0.5
