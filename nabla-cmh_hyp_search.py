@@ -116,7 +116,7 @@ def main(cfg: DictConfig) -> None:
 
     # ------ EXPERIMENTS CONFIGURATION ------ #
     graph_name = "COND_MAT"
-    alg = ["LEID"]
+    alg = ["GRE", "LEID"]
     tau = 0.5
     c_beta = 1
 
@@ -176,7 +176,7 @@ def main(cfg: DictConfig) -> None:
     }
 
 
-    sweep_id = wandb.sweep(sweep_config, project=f"hyp_search {graph_name} {alg[0]} tau_{tau} beta_{c_beta}")
+    sweep_id = wandb.sweep(sweep_config, project=f"hyp_search {graph_name} {alg[1]} tau_{tau} beta_{c_beta}")
     wandb.agent(sweep_id, function=lambda: exp(env,save_path), count=150)
 
 
