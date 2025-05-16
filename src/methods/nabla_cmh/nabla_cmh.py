@@ -24,7 +24,7 @@ class nablaCMH():
         self.device: torch.device = self.env.device
         self.seed: int = self.env.seed
         self.reinitialization: bool = True # to choose if allow the method to reinit optimization if goal not achieved
-        self.training_alg: str = "leiden"
+        self.training_alg: str = "greedy"
 
         # Hyperparameters
         self.T, self.lr, self.lambd, self.promising_actions_coeffs = get_hyperparams(
