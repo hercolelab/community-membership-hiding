@@ -48,11 +48,10 @@ Suggested Parameters:
 """
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-graph_names = ["POW"]
+graph_names = ["COND_MAT"]
 
 #community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SCD", "LOC", "DGC"]
 community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
-
 
 
 evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 
