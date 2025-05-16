@@ -1,7 +1,6 @@
-graph: COND_MAT
+graph: KAR
 community_detection_alg:
 - GRE
-- LEID
 evasion_attack_alg: NABLA
 budget_multiplier: 1
 similarity_threshold: 0.5

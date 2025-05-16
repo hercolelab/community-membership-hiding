@@ -19,7 +19,8 @@ class GraphEnvironment(object):
             community_detection_algs: List[str],
             target_node: int = 0,
             budget_multiplier: int = 1,
-            similarity_threshold: float = 0.5) -> None:
+            similarity_threshold: float = 0.5,
+            graph_path: Optional[str] = None) -> None:
         """
         Initialize the Graph Environment object
 
@@ -44,6 +45,7 @@ class GraphEnvironment(object):
         self.graph_name: str = graph_name
         self.graph_name_output: str = getattr(DatasetNames, self.graph_name).value
         self.graph_name_full: str = getattr(DatasetFullNames, self.graph_name).value
+        self.graph_path = graph_path
         # Graph objects
         self.original_graph: ig.Graph = None
         self.agent_graph: ig.Graph = None # Graph object for the agent, characterized by random features for the nodes embeddings 
@@ -156,8 +158,10 @@ class GraphEnvironment(object):
 
     def set_graph(self) -> None:
         """Set the igraph.Graph object in the environment"""
-        
-        self.original_graph = Utils.import_graph(getattr(FilePaths, self.graph_name).value)
+        if self.graph_path is None:
+            self.original_graph = Utils.import_graph(getattr(FilePaths, self.graph_name).value)
+        else:
+            self.original_graph = Utils.import_graph(self.graph_path)
         self.agent_graph = self.set_node_features(self.original_graph)
 
     def set_node_features(self, original_graph: ig.Graph) -> None:
@@ -189,7 +193,7 @@ class GraphEnvironment(object):
         self.community_detection_algs = [
             CommunityDetectionAlg(alg_name, self) for alg_name in self.community_detection_alg_names_output
         ]
-        self.nabla_cmh_alg = CommunityDetectionAlg(getattr(DetectionAlgorithmsNames, "LEID").value, self)
+        self.nabla_cmh_alg = CommunityDetectionAlg(getattr(DetectionAlgorithmsNames, "GRE").value, self)
         self.original_communities = [
             alg.community_detection(self.original_graph) for alg in self.community_detection_algs
         ]

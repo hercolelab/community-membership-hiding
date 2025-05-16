@@ -15,6 +15,9 @@ from torch_geometric.utils import from_networkx
 from torch_geometric.nn import Node2Vec
 from torch.optim import SparseAdam
 from torch_geometric.data import Data
+import os
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '../../../..'))
 
 
 class GNN(nn.Module):
@@ -154,7 +157,7 @@ def DGCluster(graph: ig.Graph, graph_name: str) -> list:
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     graph_name = getattr(DatasetNames, graph_name).value
-    model_path = f"src/community_detection/extra_algs/dgcluster/models/model_{graph_name}_0.2_301_gcn_22.pth"
+    model_path = f"{ROOT_DIR}/src/community_detection/extra_algs/dgcluster/models/model_{graph_name}_0.2_301_gcn_22.pth"
     # Convert the igraph graph to PyTorch Geometric Data object
     data = from_ig_graph_to_node2vec_geometric_data(graph)
     data = data.to(device)

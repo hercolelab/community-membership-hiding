@@ -18,7 +18,7 @@ import leidenalg as la
 from src.community_detection.extra_algs.scd import ig_SCD
 from src.community_detection.extra_algs.locale.locale import ig_leiden_locale
 from src.community_detection.extra_algs.dgcluster.dgcluster import DGCluster
-from dgcluster_training import compute_fast_modularity, from_ig_graph_to_node2vec_geometric_data
+from community_detection.extra_algs.dgcluster.dgcluster_training import compute_fast_modularity, from_ig_graph_to_node2vec_geometric_data
 
 """ 
 Available Datasets (only one can be selected):

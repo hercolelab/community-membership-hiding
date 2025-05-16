@@ -19,12 +19,16 @@ from torch_geometric.data import Data
 from enum import Enum
 import igraph as ig
 from torch_geometric.data import Data
+import os
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '../../../..'))
 
 class FilePaths(Enum):
     """Class to store file paths for data and models"""
 
     # Local
-    DATASETS_DIR = "dataset/networks"
+    DATASETS_DIR = f"{ROOT_DIR}/dataset/networks"
     LOG_DIR = "src/logs/"
     TEST_DIR = "outputs/"
 
@@ -75,26 +79,6 @@ def import_graph(file_path: str) -> ig.Graph:
 
         return graph
 
-class DRL_agentHyps(Enum):
-    LAMBDA = [0.1]
-    ALPHA = [0.7]
-    EPSILON = [0]
-    EMBEDDING_DIM = 128  # 256
-    WALK_NUMBER = 5  # 5, 10
-    WALK_LENGTH = 40  # 40, 80
-    HIDDEN_SIZE_1 = 64
-    HIDDEN_SIZE_2 = 64
-    DROPOUT = 0.2
-    WEIGHT_DECAY = 1e-3
-    EPS_CLIP = np.finfo(np.float32).eps.item()  # 0.2
-    BEST_REWARD = -np.inf
-    LR = [7e-4]
-    GAMMA = [0.95]
-    LR_EVAL = 0.0001  # LR[0]
-    GAMMA_EVAL = 0.7  # GAMMA[0]
-    LAMBDA_EVAL = 0.1  # LAMBDA[0]
-    ALPHA_EVAL = 0.7  # ALPHA[0]
-    EPSILON_EVAL = 25  # EPSILON[0]
 
 
 def compute_fast_modularity(clusters, num_nodes, num_edges, torch_sparse_adj, degree, device):
@@ -117,10 +101,10 @@ def compute_fast_modularity(clusters, num_nodes, num_edges, torch_sparse_adj, de
 
 def parse_args():
     args = argparse.ArgumentParser(description='DGCluster arguments.')
-    args.add_argument('--dataset', type=str, default='fb-75')
+    args.add_argument('--dataset', type=str, default='kar', choices=['kar', 'words', 'vote', 'pow', 'fb-75', 'cond-mat', 'fb-art', 'dblp'])
     args.add_argument('--lam', type=float, default=0.2)
     args.add_argument('--alp', type=float, default=0)
-    args.add_argument('--device', type=str, default='cpu', choices=['cpu', 'cuda:0', 'cuda:1', 'cuda:2', 'cuda:3'])
+    args.add_argument('--device', type=str, default='cpu', choices=['cpu', 'cuda:0'])
     args.add_argument('--epochs', type=int, default=301)
     args.add_argument('--base_model', type=str, default='gcn', choices=['gcn', 'gat', 'gin', 'sage'])
     args.add_argument('--seed', type=int, default=22)

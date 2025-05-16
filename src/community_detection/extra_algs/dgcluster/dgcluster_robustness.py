@@ -1,3 +1,9 @@
+import os
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '../../../..'))
+import sys
+sys.path.insert(0, ROOT_DIR)
+
 from src.graph_environment.env import GraphEnvironment
 from src.utils.utils import EvasionAlgorithmsNames, DRL_agentHyps, FilePaths, ExperimentHyps
 from src.community_detection.algorithms import CommunityDetectionAlg
@@ -23,10 +29,14 @@ from karateclub import Node2Vec
 import numpy as np
 from rich.progress import Progress
 import matplotlib.pyplot as plt
+import os
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '../../../..'))
 
 
 """
-# ------ EVASION OPTIONS ------ #
+# ------ ANALYSIS OPTIONS ------ #
 This script analyze robustness of Node2Vec embeddings and associated DGCluster performances.
 
 Available Datasets:
@@ -99,23 +109,27 @@ def convert_numpy_types(obj):
 
 
 # ------ ANALYSIS CONFIGURATION ------ #
-graph_name = "WORDS"
+graph_name = "KAR"
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #
-with open("src/conf/robustness.yaml", "r") as file:
-        cfg = yaml.safe_load(file)
+yaml_dir = os.path.join(ROOT_DIR, 'src/conf')
+yaml_dir = os.path.abspath(yaml_dir)
+yaml_file = os.path.join(yaml_dir, 'robustness.yaml')
+with open(yaml_file, "r") as file:
+    cfg = yaml.safe_load(file)
 cfg["graph"] = graph_name
-with open("src/conf/robustness.yaml", "w") as file:
+with open(yaml_file, "w") as file:
     yaml.dump(cfg, file, sort_keys=False)
 
 
 # ------ MAIN FUNCTION ------ #
 log = logging.getLogger(__name__)
-@hydra.main(config_path="src/conf", config_name="robustness", version_base=None)
+@hydra.main(config_path=yaml_dir, config_name="robustness", version_base=None)
 def main(cfg: DictConfig) -> None:
 
     # Set the environment, graph, and detection algorithm
-    env = GraphEnvironment(graph_name, ["GRE"])
+    graph_path = getattr(FilePaths, graph_name).value
+    env = GraphEnvironment(graph_name, ["GRE"], graph_path = f"{ROOT_DIR}/{graph_path}")
     original_graph = env.original_graph.copy()
     original_nx_graph = original_graph.to_networkx()
     preferred_sizes = ExperimentHyps.target_community_size.value
@@ -258,8 +272,7 @@ def main(cfg: DictConfig) -> None:
             progress.update(outer_task, advance=1)
     
     # Save the results to a JSON file
-    output_dir = HydraConfig.get().runtime.output_dir + "/"
-    output_file = f"{output_dir}robustness_results_{graph_name}.json"
+    output_file = f"{CURRENT_DIR}/robustness/{graph_name}/robustness_results.json"
     with open(output_file, 'w') as file:
         json.dump(results, file, indent=4, default=convert_numpy_types)
 
@@ -297,7 +310,7 @@ def main(cfg: DictConfig) -> None:
     plt.ylabel('Mean Embeddings Distance')
     plt.title(f'Mean Embeddings Distance of {graph_name}')
     plt.grid()
-    plt.savefig(f"{output_dir}mean_embeddings_distance_{graph_name}.png")
+    plt.savefig(f"{CURRENT_DIR}/robustness/{graph_name}/mean_embeddings_distance.png")
 
     # Plot average median embeddings distance
     plt.figure(figsize=(10, 6))
@@ -306,7 +319,7 @@ def main(cfg: DictConfig) -> None:
     plt.ylabel('Median Embeddings Distance')
     plt.title(f'Median Embeddings Distance of {graph_name}')
     plt.grid()
-    plt.savefig(f"{output_dir}median_embeddings_distance_{graph_name}.png")
+    plt.savefig(f"{CURRENT_DIR}/robustness/{graph_name}/median_embeddings_distance.png")
 
     # Plot average number of communities
     plt.figure(figsize=(10, 6))
@@ -315,7 +328,7 @@ def main(cfg: DictConfig) -> None:
     plt.ylabel('Number of Communities')
     plt.title(f'Number of Communities of {graph_name}')
     plt.grid()
-    plt.savefig(f"{output_dir}number_of_communities_{graph_name}.png")
+    plt.savefig(f"{CURRENT_DIR}/robustness/{graph_name}/number_of_communities.png")
 
     # Plot average NMI score
     plt.figure(figsize=(10, 6))
@@ -324,7 +337,7 @@ def main(cfg: DictConfig) -> None:
     plt.ylabel('NMI Score')
     plt.title(f'NMI Score of {graph_name}')
     plt.grid()
-    plt.savefig(f"{output_dir}nmi_score_{graph_name}.png")
+    plt.savefig(f"{CURRENT_DIR}/robustness/{graph_name}/nmi_score.png")
 
     # Plot average modularity
     plt.figure(figsize=(10, 6))
@@ -333,7 +346,7 @@ def main(cfg: DictConfig) -> None:
     plt.ylabel('Modularity')
     plt.title(f'Modularity of {graph_name}')
     plt.grid()
-    plt.savefig(f"{output_dir}modularity_{graph_name}.png")
+    plt.savefig(f"{CURRENT_DIR}/robustness/{graph_name}/modularity.png")
 
     log.info(">> Analysis completed.")
     log.info("========== END OF ANALYSIS ==========")
