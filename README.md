@@ -62,35 +62,6 @@ To change the seed of the experiment, refer to line 92 of `src/utils/utils.py`.
 where the hyperparameters of the experiment can be modified at lines 61-68 of `single_evasion.py`.   
 This script does not support multiple datasets, betas and taus.
 
-## References
-
-```bibtex
-@inproceedings{Bernini_2024, series={KDD ’24},
-   title={Evading Community Detection via Counterfactual Neighborhood Search},
-   url={http://dx.doi.org/10.1145/3637528.3671896},
-   DOI={10.1145/3637528.3671896},
-   booktitle={Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining},
-   publisher={ACM},
-   author={Bernini, Andrea and Silvestri, Fabrizio and Tolomei, Gabriele},
-   year={2024},
-   month=aug, pages={131–140},
-   collection={KDD ’24} 
-}
-```
-
-```bibtex
-@article{Waniek_2018,
-   title={Hiding individuals and communities in a social network},
-   volume={2}, ISSN={2397-3374},
-   url={http://dx.doi.org/10.1038/s41562-017-0290-3},
-   DOI={10.1038/s41562-017-0290-3},
-   number={2}, journal={Nature Human Behaviour},
-   publisher={Springer Science and Business Media LLC},
-   author={Waniek, Marcin and Michalak, Tomasz P. and Wooldridge, Michael J. and Rahwan, Talal},
-   year={2018}, month=jan, pages={139–147} 
-}
-```
-
 ## Directory Structure
 
 ```bash
