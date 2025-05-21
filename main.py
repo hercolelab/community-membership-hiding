@@ -5,7 +5,6 @@ from omegaconf import DictConfig
 import hydra
 import yaml
 import logging
-from rich.logging import RichHandler
 
 """
 # ------ EVASION OPTIONS ------ #
@@ -48,10 +47,12 @@ Suggested Parameters:
 """
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
+#graph_names = ["KAR", "WORDS", "VOTE", "POW", "FB_75", "COND_MAT"]
 graph_names = ["KAR"]
 
-#community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "EIG", "SCD", "LOC", "DGC"]
 community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
+#community_detection_algs = ["GRE"]
+
 
 
 evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"] 

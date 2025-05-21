@@ -36,7 +36,7 @@ where $\tau$ is a predefined threshold controlling the required level of dissimi
 
 Make sure to have `conda` installed:
 
-<pre> <code> conda create --name graph-cmh --python=3.9.18 
+<pre> <code> conda create --name graph-cmh python=3.9.18 
   conda activate graph-cmh </code> </pre>
 
 Then, install the requirements:
