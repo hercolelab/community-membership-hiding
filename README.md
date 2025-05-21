@@ -4,32 +4,32 @@ Community detection is a fundamental problem in network science, where algorithm
 
 The **Community Membership Hiding (CMH)** problem addresses this issue by strategically modifying a network’s structure to obscure a target node’s membership in a specific community. Given a network and a community detection algorithm, the goal is to perturb the network in a way that prevents the target node from being recognized as part of its original community.
 
-This repository is built on [igraph](https://python.igraph.org/en/stable/), and provides an implementation of **∇-CMH**, a gradient-based optimisation approach, a Deep Reinforcement Learning ([**DRL-agent**](https://github.com/AndreaBe99/community_membership_hiding)) method, and several baselines, such as **DICE**, **ROAM**, Random-based, Degree-based, and Centrality-based. 
+This repository is built on *igraph*, and provides an implementation of **∇-CMH**, a gradient-based optimisation approach, a Deep Reinforcement Learning (**DRL-agent**) method, and several baselines, such as **DICE**, **ROAM**, Random-based, Degree-based, and Centrality-based. 
 It supports multiple real-world network datasets and different community detection algorithms.
 
 ## Problem Definition
 
-Let $G = (V, E)$ be an undirected graph where $v$ is the set of nodes and $E$ is the set of edges. A **community detection algorithm** $f(\cdot)$ partitions the nodes into non-overlapping communities $\{C_1, C_2, ..., C_k\}$, where each node belongs to exactly one community. Given a **target node** $u$ that belongs to a community $C_i$ (i.e., $u \in C_i$), the objective of the CMH problem is to modify the structure of $G$ such that, when the community detection algorithm $f(\cdot)$ is applied to the modified graph $G'$, the node $u$ is no longer recognized as a member of $C_i$.
+Let $G = (V, E)$ be an undirected graph where $v$ is the set of nodes and $E$ is the set of edges. A **community detection algorithm** $`f(\cdot)`$ partitions the nodes into non-overlapping communities $`\{C_1, C_2, ..., C_k\}`$, where each node belongs to exactly one community. Given a **target node** $u$ that belongs to a community $C_i$ (i.e., $`u \in C_i`$), the objective of the CMH problem is to modify the structure of $`G`$ such that, when the community detection algorithm $f(\cdot)$ is applied to the modified graph $`G'`$, the node $u$ is no longer recognized as a member of $`C_i`$.
 
 <p align="center">
   <img src="images/cmh.gif" width="50%" />
 </p>
 
 
-To achieve this, we define a **perturbation function** $h_{\theta}(\cdot)$, parameterized by $\theta$, that modifies $g$ into a new graph $G' = h_{\theta}(G)$ by adding or removing edges in the neighborhood of $u$. The goal is to find an optimal function $h^*_{\theta}$ that ensures $u$ is removed from its original community:
+To achieve this, we define a **perturbation function** $`h_{\theta}(\cdot)`$, parameterized by $`\theta`$, that modifies $g$ into a new graph $`G' = h_{\theta}(G)`$ by adding or removing edges in the neighborhood of $`u`$. The goal is to find an optimal function $`h^*_{\theta}`$ that ensures $u$ is removed from its original community:
 
 $$\theta^* = \arg\min_{\theta} L(h_{\theta}; G, f, u)$$
 
-subject to a **budget constraint** on the number of modifications $|B| \leq \beta$, where $B$ is the set of edges modified, and $\beta$ represents the maximum number of allowed changes.
+subject to a **budget constraint** on the number of modifications $`|B| \leq \beta`$, where $`B`$ is the set of edges modified, and $\beta$ represents the maximum number of allowed changes.
 
-The effectiveness of the hiding process is measured using a **similarity function** $sim(C_i \setminus \{u\}, C'_i \setminus \{u\})$, which compares the original community $C_i$ and the new assigned community $C'_i$ in the modified graph $G'$. 
+The effectiveness of the hiding process is measured using a **similarity function** $`sim(C_i \setminus \{u\}, C'_i \setminus \{u\})`$, which compares the original community $`C_i`$ and the new assigned community $`C'_i`$ in the modified graph $`G'`$. 
 The hiding task is considered successful if:
 
 $$
 \text{sim}(C_i \setminus \{u\}, C'_i \setminus \{u\}) \leq \tau
 $$
 
-where $\tau$ is a predefined threshold controlling the required level of dissimilarity, which ranges between $0$ and $1$.
+where $`\tau`$ is a predefined threshold controlling the required level of dissimilarity, which ranges between $0$ and $1$.
 
 
 ## Installation
@@ -51,8 +51,8 @@ where the hyperparameters of the experiment, i.e.
 - *dataset* : `[KAR, WORDS, VOTE, POW, FB_75, COND_MAT]`
 - *detection algorithm* : `[GRE, LOUV, LEID, INF, LAB, WALK, SCD, LOC, DGC]`
 - *hiding method* : `[NABLA, DRL, DICE, ROAM, RAND, DEG, BETW]`
-- *budget factor* $$\beta$$: `[0.5,1,2]`
-- *similarity threshold* $$\tau$$: `[0.3,0.5,0.8]`
+- *budget factor* $`\beta`$: `[0.5,1,2]`
+- *similarity threshold* $`\tau`$: `[0.3,0.5,0.8]`
   
 can be modified at lines 51-64 of `main.py`.   
 To change the seed of the experiment, refer to line 92 of `src/utils/utils.py`.
