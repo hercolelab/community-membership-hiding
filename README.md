@@ -43,6 +43,14 @@ Then, install the requirements:
 
 <pre> <code> pip install -r requirements.txt </code> </pre>
 
+If you have a GPU, run (according to [CUDA version](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html)): 
+
+<pre> <code> pip install torch-cluster -f https://data.pyg.org/whl/torch-2.6.0+cu124.html </code> </pre>
+
+If you want to run on CPU: 
+
+<pre> <code> pip install torch-cluster -f https://data.pyg.org/whl/torch-2.6.0+cpu.html </code> </pre>
+
 ## Usage
 
 1. **Run the CMH-experiment**:
