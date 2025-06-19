@@ -28,7 +28,7 @@ Key features:
 - This method is intended for advanced, adaptive evasion strategies and can be compared against baseline and optimization-based methods in the CMH framework.
 - For detailed usage, configuration, and implementation details, refer to the docstrings and comments within each script and subfolder.
 
-### Advantage Actor-Critic (A2C)
+## In-depth analysis of the Advantage Actor-Critic (A2C) approach
 
 To learn the optimal policy for our agent defined above, we use the **Advantage Actor-Critic** (A2C) algorithm, a popular deep reinforcement learning technique that combines the advantages of both policy-based and value-based methods.
 Specifically, A2C defines two neural networks, one for the policy ($\pi_{\theta}$) and another for the value function estimator ($V_v$), such that:
@@ -43,7 +43,7 @@ where $\mathcal{J}(\theta)$ is the reward (objective) function, and the goal is 
 
 Below, we describe the policy network (*actor*) and value function network (*critic*) separately.
 
-#### Actor
+### Actor
 
 The policy network is responsible for generating a probability distribution over possible actions based on the input, which consists of a list of nodes and the graph's feature matrix.
 However, some graphs may lack node features. In such cases, we can extract continuous node feature vectors (i.e., node embeddings) with graph representational learning frameworks like `node2vec`. These node embeddings serve as the feature matrix.
@@ -53,7 +53,7 @@ Our neural network implementation comprises a primary graph convolution layer (G
 The policy is trained to predict the probability that node $v$ is the optimal choice for adding or removing the edge $(u, v)$ to hide the target node $u$ from its original community.
 The feasible actions depend on the input node $u$ and are restricted to a subset of the graph's edges. Hence, not all nodes $v \in \mathcal{V}$ are viable options for the policy.
 
-#### Critic
+### Critic
 
 This network closely resembles the one employed for the policy, differing only in one aspect: it incorporates a global sum-pooling operation on the convolution layer's output. This pooling operation results in an output layer with a size of 1, signifying the estimated value of the value function. The role of the value function is to predict the state value when provided with a specific action $a_t$ and state $s_t$
 
