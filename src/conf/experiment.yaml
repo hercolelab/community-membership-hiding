@@ -1,22 +1,5 @@
-evasion_algs:
-- RAND
-- DEG
-- BETW
-- ROAM
-- DICE
-- NABLA
-- DRL
-graphs:
-- KAR
-community_algs:
-- LEID
-beta_factors:
-- 1.0
-taus:
-- 0.5
-seed: 42
 community_detection_algs:
-- GRE
+- DGC
 evasion_attack_algs:
 - RAND
 - DEG
@@ -26,6 +9,16 @@ evasion_attack_algs:
 - NABLA
 - DRL
 budget_multipliers:
+- 0.5
 - 1
+- 2
 similarity_thresholds:
 - 0.5
+seed: 2025
+graphs:
+- KAR
+- WORDS
+- VOTE
+- POW
+- FB_75
+- COND_MAT

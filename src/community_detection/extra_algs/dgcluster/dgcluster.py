@@ -82,62 +82,7 @@ def from_ig_graph_to_node2vec_geometric_data(graph: ig.Graph) -> Data:
         g_undir = graph.as_undirected()
         nx_graph = g_undir.to_networkx()
         data = from_networkx(nx_graph)
-        edge_index = data.edge_index
-
-        # hyperparameters
-        embedding_dim = 128
-        walk_length   = 20
-        context_size  = 10
-        walks_per_node= 10
-        p, q          = 1.0, 1.0      # return / in-out parameters
-        num_negative_samples = 1
-        sparse = True                # use SparseAdam optimizer
-
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-        model = Node2Vec(
-            edge_index,
-            embedding_dim=embedding_dim,
-            walk_length=walk_length,
-            context_size=context_size,
-            walks_per_node=walks_per_node,
-            p=p,
-            q=q,
-            num_negative_samples=num_negative_samples,
-            num_nodes=graph.vcount(),
-            sparse=sparse
-        ).to(device)
-
-        loader = model.loader(batch_size=128, shuffle=True)
-        optimizer = SparseAdam(list(model.parameters()), lr=0.01)
-
-        def train_epoch():
-            model.train()
-            total_loss = 0
-
-            for pos_rw, neg_rw in loader:
-                pos_rw = pos_rw.to(device)
-                neg_rw = neg_rw.to(device)
-
-                optimizer.zero_grad()
-                loss = model.loss(pos_rw, neg_rw)
-                loss.backward()
-                optimizer.step()
-
-                total_loss += loss.item()
-
-            return total_loss
-
-        # Run multiple epochs
-        for epoch in range(1, 11):
-            loss = train_epoch()
-            #print(f'Epoch {epoch:02d}, Loss: {loss:.4f}')
-
-        model.eval()
-        with torch.no_grad():
-            # shape [num_nodes, embedding_dim]
-            embeddings = model.embedding.weight.data.cpu()
-        
+        edge_index = data.edge_index       
         data = Data(edge_index=edge_index)
         data.num_nodes = graph.vcount()
         return data
@@ -164,7 +109,7 @@ def DGCluster(graph: ig.Graph, graph_name: str) -> list:
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     graph_name = getattr(DatasetNames, graph_name).value
-    model_path = f"{ROOT_DIR}/src/community_detection/extra_algs/dgcluster/models/model_{graph_name}_0.2_301_gcn_22.pth"
+    model_path = f"{ROOT_DIR}/src/community_detection/extra_algs/dgcluster/models/model_{graph_name}_0.2_300_gcn_22.pth"
     # Convert the igraph graph to PyTorch Geometric Data object
     data = from_ig_graph_to_node2vec_geometric_data(graph)
     data = data.to(device)

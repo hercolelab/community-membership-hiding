@@ -14,6 +14,7 @@ from time import time
 import json
 from hydra.core.hydra_config import HydraConfig
 from tqdm import trange
+import numpy as np
 
 log = logging.getLogger(__name__)
 
@@ -189,13 +190,13 @@ class CmhExperiment:
                     "time": [],
                 }
                 with open(dir_path + filename, "w") as json_file:
-                    json.dump(results, json_file, indent=4)
+                    json.dump(results, json_file, indent=4, cls=NumpyEncoder)
                 # Additional json for nabla-cmh
                 if alg == EvasionAlgorithmsNames.NABLA.name:
                     filename_additional = f"{getattr(EvasionAlgorithmsNames, alg).value}_additional.json"
                     results_additional = {"hidings": []}
                     with open(dir_path + filename_additional, "w") as json_file:
-                        json.dump(results_additional, json_file, indent=4)
+                        json.dump(results_additional, json_file, indent=4, cls=NumpyEncoder)
 
     def save_results(
         self,
@@ -243,14 +244,40 @@ class CmhExperiment:
             results["nmi"].append(nmis[idx])
             results["time"].append(time)
             with open(dir_path + filename, "w") as json_file:
-                json.dump(results, json_file, indent=4)
+                json.dump(convert(results), json_file, indent=4, cls=NumpyEncoder)
             if additional_results is not None:
                 filename_additional = f"{getattr(EvasionAlgorithmsNames, alg).value}_additional.json"
                 with open(dir_path + filename_additional, "r") as json_file:
                     results_additional = json.load(json_file)
                 results_additional["hidings"].append(additional_results)
                 with open(dir_path + filename_additional, "w") as json_file:
-                    json.dump(results_additional, json_file, indent=4)
+                    json.dump(convert(results_additional), json_file, indent=4, cls=NumpyEncoder)
+
+def convert(obj):
+    if isinstance(obj, dict):
+        return {k: convert(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert(i) for i in obj]
+    elif isinstance(obj, tuple):
+        return tuple(convert(i) for i in obj)
+    elif isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    else:
+        return obj
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NumpyEncoder, self).default(obj)
 
 
 
