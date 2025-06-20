@@ -9,6 +9,7 @@ from src.baselines.betweenness import CentralityHiding
 from src.baselines.roam import RoamHiding
 from src.baselines.dice import DiceHiding
 from src.methods.nabla_cmh.nabla_cmh import nablaCMH
+from src.methods.nabla_cmh_projection.nabla_cmh_proj import nablaCMH_proj
 from src.methods.drl_agent.agent import Agent
 from time import time
 import json
@@ -49,7 +50,7 @@ Available Evasion Attack Algorithms:
     - DICE:  Dice
     - NABLA: Nabla-CMH
     - DRL:   DRL-Agent (not supported yet)
-    - GRE:   Greedy (not supported yet)
+    - NABLAP: Nabla-CMH-Projected
 
 Suggested Parameters:
 - Budget Multipliers (beta factor): [0.5, 1, 2]
@@ -58,13 +59,13 @@ Suggested Parameters:
 
 
 # ------ ATTACK CONFIGURATION ------ #
-graph_name = "WORDS"
+graph_name = "KAR"
 #community_detection_alg = ["GRE", "LOUV", "WALK", "INF", "LAB", "EIG", "SCD", "LOC", "DGC"]
-community_detection_alg = ["DGC"]
-#evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "DRL"]
-evasion_attack_algs = ["ROAM"]
-target_node = 111
-budget_multiplier = 0.5
+community_detection_alg = ["GRE"]
+#evasion_attack_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA", "NABLAP" "DRL"]
+evasion_attack_algs = ["NABLA", "NABLAP"]
+target_node = 5
+budget_multiplier = 1
 similarity_threshold = 0.5
 
 # ------ UPDATE HYDRA CONFIG FILE ------ #
@@ -128,6 +129,8 @@ def main(cfg: DictConfig) -> None:
             evasion_alg = DiceHiding(env, target_node, env.budget)
         elif alg == EvasionAlgorithmsNames.NABLA.name:
             evasion_alg = nablaCMH(env, target_node, env.budget)
+        elif alg == EvasionAlgorithmsNames.NABLA_PROJ.name:
+            evasion_alg = nablaCMH_proj(env, target_node, env.budget)
         elif alg == EvasionAlgorithmsNames.DRL.name:
             evasion_alg = Agent(env)
         else:
@@ -135,6 +138,8 @@ def main(cfg: DictConfig) -> None:
         
         # Set the hiding function
         if alg == EvasionAlgorithmsNames.NABLA.name:
+            func_call = lambda: evasion_alg.community_membership_hiding(verbose_iterations=True)  
+        elif alg == EvasionAlgorithmsNames.NABLA_PROJ.name:
             func_call = lambda: evasion_alg.community_membership_hiding(verbose_iterations=True)  
         elif alg == EvasionAlgorithmsNames.DRL.name:
                             func_call = lambda: evasion_alg.test(
@@ -157,6 +162,8 @@ def main(cfg: DictConfig) -> None:
         # Unpack variables based on algorithm type
         if alg == EvasionAlgorithmsNames.NABLA.name:
             new_graph, steps, changes, add_results = result  # nabla-cmh returns an extra value
+        elif alg == EvasionAlgorithmsNames.NABLA_PROJ.name:
+            new_graph, steps, changes, add_results = result  # nabla-cmh returns an extra value
         else:
             new_graph, steps, changes = result  
 
@@ -171,7 +178,7 @@ def main(cfg: DictConfig) -> None:
             "nmi": nmi,
             "time": total_time
         }
-        if alg == EvasionAlgorithmsNames.NABLA.name:
+        if alg == EvasionAlgorithmsNames.NABLA.name or alg == EvasionAlgorithmsNames.NABLA_PROJ.name:
             results[getattr(EvasionAlgorithmsNames,alg).value]["additional_results"] = add_results
             
         log.info("="*60)
@@ -191,7 +198,7 @@ def main(cfg: DictConfig) -> None:
     with open(dir_path+"/cmh_attack.json", "w") as json_file:
         json.dump(results, json_file, indent=4)
 
-    #test changes 
+    #test changes of last algorithm
     log.info(f"Old Neighboors of {target_node}: {env.original_graph.neighbors(target_node)}")
     log.info(f"New Neighboors of {target_node}: {new_graph.neighbors(target_node)}")
 

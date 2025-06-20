@@ -83,6 +83,7 @@ class EvasionAlgorithmsNames(Enum):
     ROAM = "roam"
     DICE = "dice"
     NABLA = "nabla-cmh"
+    NABLAP = "nabla-cmh-projected"
     DRL = "drl-agent"
     GRE = "greedy"
 

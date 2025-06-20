@@ -7,6 +7,7 @@ from src.baselines.betweenness import CentralityHiding
 from src.baselines.roam import RoamHiding
 from src.baselines.dice import DiceHiding
 from src.methods.nabla_cmh.nabla_cmh import nablaCMH
+from src.methods.nabla_cmh_projection.nabla_cmh_proj import nablaCMH_proj
 from src.methods.drl_agent.agent import Agent
 from typing import List, Optional, Dict, Any
 import logging
@@ -118,6 +119,8 @@ class CmhExperiment:
                     # Unpack variables based on algorithm type
                     if alg == EvasionAlgorithmsNames.NABLA.name:
                         new_graph, steps, changes, add_results = result
+                    elif alg == EvasionAlgorithmsNames.NABLAP.name:
+                        new_graph, steps, changes, add_results = result
                     else:
                         new_graph, steps, changes = result
                         add_results = None
@@ -143,6 +146,8 @@ class CmhExperiment:
             return DiceHiding(self.env, target_node, self.budget)
         elif alg == EvasionAlgorithmsNames.NABLA.name:
             return nablaCMH(self.env, target_node, self.env.budget)
+        elif alg == EvasionAlgorithmsNames.NABLAP.name:
+            return nablaCMH_proj(self.env, target_node, self.env.budget)
         elif alg == EvasionAlgorithmsNames.DRL.name:
             return Agent(env=self.env)
         else:

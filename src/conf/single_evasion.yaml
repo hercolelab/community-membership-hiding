@@ -1,8 +1,9 @@
-graph: WORDS
+graph: KAR
 community_detection:
-- DGC
-target_node: 111
-budget_multiplier: 0.5
+- GRE
+target_node: 5
+budget_multiplier: 1
 similarity_threshold: 0.5
 evasion_attack_algs:
-- ROAM
+- NABLA
+- NABLA_PROJ
