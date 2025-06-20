@@ -1,0 +1,10 @@
+feature,time_seconds
+degree,5.2928924560546875e-05
+eccentricity,0.0007958412170410156
+betweenness_centrality,0.000614166259765625
+closeness_centrality,0.00031113624572753906
+eigenvector_centrality,0.0022361278533935547
+coreness_centrality,2.2172927856445312e-05
+harmonic_centrality,0.0002639293670654297
+clustering_coefficient,0.00027489662170410156
+pagerank,0.0002701282501220703

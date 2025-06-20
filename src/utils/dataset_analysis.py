@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 import igraph as ig 
 from typing import Tuple, List
 import numpy as np

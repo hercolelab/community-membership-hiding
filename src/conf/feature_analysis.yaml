@@ -1,0 +1,11 @@
+graph: COND_MAT
+features:
+- degree
+- eccentricity
+- betweenness_centrality
+- closeness_centrality
+- eigenvector_centrality
+- coreness_centrality
+- harmonic_centrality
+- clustering_coefficient
+- pagerank
