@@ -1,4 +1,4 @@
-evasion_attack_algs:
+evasion_algs:
 - RAND
 - DEG
 - BETW
@@ -8,18 +8,24 @@ evasion_attack_algs:
 - DRL
 graphs:
 - KAR
+community_algs:
+- LEID
+beta_factors:
+- 1.0
+taus:
+- 0.5
+seed: 42
 community_detection_algs:
 - GRE
-- LOUV
-- LEID
-- WALK
-- INF
-- LAB
-- SCD
-- LOC
-- DGC
+evasion_attack_algs:
+- RAND
+- DEG
+- BETW
+- ROAM
+- DICE
+- NABLA
+- DRL
 budget_multipliers:
 - 1
 similarity_thresholds:
 - 0.5
-seed: 42

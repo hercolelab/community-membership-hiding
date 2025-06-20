@@ -50,8 +50,8 @@ Suggested Parameters:
 #graph_names = ["KAR", "WORDS", "VOTE", "POW", "FB_75", "COND_MAT"]
 graph_names = ["KAR"]
 
-community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
-#community_detection_algs = ["GRE"]
+#community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
+community_detection_algs = ["GRE"]
 
 
 

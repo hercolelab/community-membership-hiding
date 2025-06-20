@@ -174,8 +174,7 @@ def from_ig_graph_to_node2vec_geometric_data(graph: ig.Graph) -> Data:
         # shape [num_nodes, embedding_dim]
         embeddings = model.embedding.weight.data.cpu()
     
-    data = Data(edge_index=edge_index)
-    data.num_nodes = graph.vcount()
+    data = Data(x=embeddings, edge_index=edge_index)
     return data
     
 
@@ -209,34 +208,28 @@ def load_dataset(dataset_name):
     return dataset
 
 class GNN(nn.Module):
-    def __init__(self, num_nodes, in_dim, out_dim, base_model):
+    def __init__(self, in_dim, out_dim, base_model):
         super(GNN, self).__init__()
 
         if base_model == 'gcn':
-            self.embed = nn.Embedding(num_nodes, in_dim)
             self.conv1 = GCNConv(in_dim, 256)
             self.conv2 = GCNConv(256, 128)
             self.conv3 = GCNConv(128, out_dim)
         elif base_model == 'gat':
-            self.embed = nn.Embedding(num_nodes, in_dim)
             self.conv1 = GATConv(in_dim, 256)
             self.conv2 = GATConv(256, 128)
             self.conv3 = GATConv(128, out_dim)
         elif base_model == 'gin':
-            self.embed = nn.Embedding(num_nodes, in_dim)
             self.conv1 = GINConv(nn.Linear(in_dim, 256))
             self.conv2 = GINConv(nn.Linear(256, 128))
             self.conv3 = GINConv(nn.Linear(128, out_dim))
         elif base_model == 'sage':
-            self.embed = nn.Embedding(num_nodes, in_dim)
             self.conv1 = SAGEConv(in_dim, 256)
             self.conv2 = SAGEConv(256, 128)
             self.conv3 = SAGEConv(128, out_dim)
 
     def forward(self, data):
-        #x, edge_index = data.x, data.edge_index
-        x = self.embed(torch.arange(data.num_nodes, device=data.edge_index.device))
-        edge_index = data.edge_index
+        x, edge_index = data.x, data.edge_index
 
         x = self.conv1(x, edge_index)
         x = F.selu(x)
@@ -354,7 +347,7 @@ if __name__ == '__main__':
     #print(data)
 
     # preprocessing
-    num_nodes = data.num_nodes
+    num_nodes = data.x.shape[0]
     num_edges = (data.edge_index.shape[1])
 
     sparse_adj = sp.sparse.csr_matrix((np.ones(num_edges), data.edge_index.cpu().numpy()), shape=(num_nodes, num_nodes))
@@ -363,9 +356,9 @@ if __name__ == '__main__':
     Graph = nx.from_scipy_sparse_array(sparse_adj, create_using=nx.Graph).to_undirected()
     num_edges = int((data.edge_index.shape[1]) / 2)
 
-    in_dim = 128
+    in_dim = data.x.shape[1]
     out_dim = 64
-    model = GNN(num_nodes, in_dim, out_dim, base_model=base_model).to(device)
+    model = GNN(in_dim, out_dim, base_model=base_model).to(device)
 
     optimizer_name = "Adam"
     lr = 1e-3
