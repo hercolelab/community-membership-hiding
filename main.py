@@ -49,19 +49,19 @@ Suggested Parameters:
 """
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-#graph_names = ["KAR", "WORDS", "VOTE", "POW", "FB_75", "COND_MAT"]
-graph_names = ["KAR"]
+graph_names = ["KAR", "WORDS", "VOTE", "POW", "FB_75", "COND_MAT"]
+#graph_names = ["KAR"]
 
-#community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
-community_detection_algs = ["GRE", "LEID", "WALK", "DGC"]
+community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
+#community_detection_algs = ["GRE", "LEID", "WALK", "DGC"]
 
 
 
-evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA" , "NABLAP", "DRL"] 
-#evasion_algs = ["NABLAP"]
+#evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA" , "NABLAP", "DRL"] 
+evasion_algs = ["NABLAP"]
 
-#beta_factors = [0.5,1,2]
-beta_factors = [1]
+beta_factors = [0.5,1,2]
+#beta_factors = [1]
 
 #taus = [0.3, 0.5, 0.8]
 taus = [0.5]  
