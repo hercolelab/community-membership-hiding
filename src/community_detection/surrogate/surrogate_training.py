@@ -51,7 +51,13 @@ class SurrogateGNN(nn.Module):
         return x  
 
 def hungarian_match(pred_labels, target_labels, num_clusters):
-    contingency = np.zeros((num_clusters, num_clusters), dtype=np.int32)
+    # Trova il numero massimo di cluster nelle etichette
+    max_pred_cluster = max(pred_labels) + 1
+    max_target_cluster = max(t for t in target_labels if t != -1) + 1
+    
+    # Ridimensiona la matrice di contingenza per contenere tutti i cluster
+    contingency = np.zeros((max(num_clusters, max_pred_cluster), 
+                           max(num_clusters, max_target_cluster)), dtype=np.int32)
     for p, t in zip(pred_labels, target_labels):
         if t == -1: continue
         contingency[p, t] += 1
@@ -63,7 +69,7 @@ def hungarian_match(pred_labels, target_labels, num_clusters):
 def train_surrogate_gnn(dataset, n_epochs=100, lr=1e-3, device='cpu'):
     n_nodes = dataset[0]['perturbed_graph'].vcount()
     model = SurrogateGNN(n_nodes=n_nodes).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999), weight_decay=0.001, amsgrad=True)
     criterion = torch.nn.CrossEntropyLoss(ignore_index=-1)
 
     for epoch in range(n_epochs):

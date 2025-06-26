@@ -82,8 +82,8 @@ def SurrogateCluster(graph: ig.Graph, graph_name: str) -> list:
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     #graph_name = getattr(DatasetNames, graph_name).value
-    #model_path = f"{ROOT_DIR}/temp_cmh/src/community_detection/surrogate/models/surrogate_gcn_{graph_name}_10_0.001_22.pth"
-    model_path = f"{ROOT_DIR}/temp_cmh/src/community_detection/surrogate/models/surrogate_gcn_{graph_name}.pth"
+    model_path = f"{ROOT_DIR}/temp_cmh/src/community_detection/surrogate/models/surrogate_gcn_{graph_name}_10_0.001_22.pth"
+    #model_path = f"{ROOT_DIR}/temp_cmh/src/community_detection/surrogate/models/surrogate_gcn_{graph_name}.pth"
     # Convert the igraph graph to PyTorch Geometric Data object
     data = from_ig_graph_to_node2vec_geometric_data(graph)
     data = data.to(device)

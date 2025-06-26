@@ -29,7 +29,7 @@ def ensemble_clustering(clusterings, num_nodes):
 
     # Step 2: hierarchical clustering on the dissimilarity matrix
     dissimilarity = 1.0 - coassoc
-    avg_n_clusters = int(np.mean([len(c) for c in clusterings]))
+    avg_n_clusters = int(np.mean([len(set(c.values())) for c in clusterings]))
     model = AgglomerativeClustering(
         n_clusters=avg_n_clusters,
         metric='precomputed',
@@ -88,6 +88,7 @@ def generate_surrogate_dataset(graph: ig.Graph, env, max_nodes=500, max_modifica
                 nodeclustering_to_dict(dgcluster_p, n_nodes)
             ]
             ensemble_p = ensemble_clustering(clusterings_p, n_nodes)
+            print(ensemble_p)
             dataset.append({
                 'target_node': target_node,
                 'num_modifications': num_mod,
