@@ -88,7 +88,6 @@ def generate_surrogate_dataset(graph: ig.Graph, env, max_nodes=500, max_modifica
                 nodeclustering_to_dict(dgcluster_p, n_nodes)
             ]
             ensemble_p = ensemble_clustering(clusterings_p, n_nodes)
-            print(ensemble_p)
             dataset.append({
                 'target_node': target_node,
                 'num_modifications': num_mod,

@@ -17,6 +17,8 @@ from sklearn.cluster import Birch
 from scipy.optimize import linear_sum_assignment
 import torch.nn.functional as F
 import random
+from sklearn.cluster import DBSCAN
+
 
 def from_ig_graph_to_geometric_data(graph: ig.Graph) -> Data:
     """
@@ -32,12 +34,13 @@ def from_ig_graph_to_geometric_data(graph: ig.Graph) -> Data:
     return data
 
 class SurrogateGNN(nn.Module):
-    def __init__(self, n_nodes, emb_dim=128, hidden1=256, hidden2=256, out_dim=64):
+    def __init__(self, n_nodes, emb_dim=128, hidden1=256, hidden2=256, out_dim=64, num_proj=128):
         super().__init__()
         self.embedding = nn.Embedding(n_nodes, emb_dim)
         self.gcn1 = GCNConv(emb_dim, hidden1)
         self.gcn2 = GCNConv(hidden1, hidden2)
         self.gcn3 = GCNConv(hidden2, out_dim) 
+        self.clf_head = nn.Linear(out_dim, num_proj)  # logits for clustering
 
     def forward(self, data):
         x = self.embedding(torch.arange(data.num_nodes, device=data.edge_index.device))
@@ -48,7 +51,9 @@ class SurrogateGNN(nn.Module):
         x = F.relu(x)
         x = F.dropout(x, training=self.training)
         x = self.gcn3(x, data.edge_index)
-        return x  
+        z = F.normalize(x, p=2, dim=-1)  # clustering embedding
+        logits = self.clf_head(z)        # for CE loss
+        return z, logits  
 
 def hungarian_match(pred_labels, target_labels, num_clusters):
     # Trova il numero massimo di cluster nelle etichette
@@ -81,14 +86,15 @@ def train_surrogate_gnn(dataset, n_epochs=100, lr=1e-3, device='cpu'):
             target = np.array(entry['agg_clusters'])  # shape (n_nodes,)
 
             optimizer.zero_grad()
-            logits = model(data)  # [n_nodes, emb_dim]
-            emb = logits.detach().cpu().numpy()
-
-            # Clustering agnostico sui logit
-            birch = Birch(threshold=0.5, n_clusters=None)
-            pred = birch.fit_predict(emb)
+            z, logits = model(data)  # shape: [n_nodes, out_dim]
+            emb_np = z.detach().cpu().numpy()
 
             n_clusters_target = len(set(target)) - (1 if -1 in target else 0)
+
+            # Clustering agnostico sui logit
+            db = DBSCAN(eps=0.5, min_samples=3, metric='euclidean')  # You can tune eps
+            pred = db.fit_predict(emb_np)
+
             pred_matched = hungarian_match(pred, target, n_clusters_target).to(device)
 
             loss = criterion(logits, pred_matched)
@@ -118,7 +124,7 @@ def main():
     random.seed(seed)
     np.random.seed(seed)
 
-    num_epochs = 10
+    num_epochs = 100
     learning_rate = 1e-3
     model = train_surrogate_gnn(surrogate_dataset, n_epochs=num_epochs, lr=learning_rate, device=device)
     torch.save(model.state_dict(), f'src/community_detection/surrogate/models/surrogate_gcn_{dataset_name}_{num_epochs}_{learning_rate}_{seed}.pth')
