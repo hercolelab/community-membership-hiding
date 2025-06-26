@@ -3,6 +3,7 @@ from src.utils.utils import ExperimentHyps, iGraphRNG
 from typing import List, Optional, Dict, Any
 from src.community_detection.extra_algs.locale.locale import ig_leiden_locale
 from src.community_detection.extra_algs.dgcluster.dgcluster import DGCluster
+from src.community_detection.surrogate.surrogate import SurrogateCluster
 from src.community_detection.extra_algs.scd import ig_SCD
 from cdlib import NodeClustering
 import igraph as ig
@@ -84,6 +85,7 @@ class CommunityDetectionAlg:
 			da.SCD.value: self.compute_scd,
 			da.LOC.value: self.compute_loc,
 			da.DGC.value: self.compute_dgc,
+			da.SURR.value: self.compute_surr
 		}
 
 		if self.alg_name not in alg_map:
@@ -194,3 +196,11 @@ class CommunityDetectionAlg:
 		name = self.env.graph_name
 		dgc = DGCluster(graph, name, **(args or {}))
 		return dgc
+	
+	def compute_surr(self, graph: ig.Graph, args: Optional[Dict[str, Any]]) -> NodeClustering:
+		"""
+		Compute the Surrogate community detection algorithm.
+		"""
+		name = self.env.graph_name
+		surr = SurrogateCluster(graph, name)
+		return surr

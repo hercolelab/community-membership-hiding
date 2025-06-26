@@ -1,57 +1,105 @@
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 import torch
 import torch.nn as nn
-from src.graph_environment.env import GraphEnvironment
-from src.utils.utils import Utils
-from src.community_detection.surrogate.surrogate_training import SurrogateGNN, from_ig_graph_to_geometric_data
-import argparse
+import torch.nn.functional as F
+from torch_geometric.data import Data
+#from karateclub import Node2Vec
+import igraph as ig
+from torch_geometric.nn import GCNConv, GATConv, GINConv, SAGEConv
+from src.utils.utils import DRL_agentHyps, DatasetNames
+from sklearn.cluster import Birch
+import numpy as np
+import cdlib
+import logging
+import time
+from torch_geometric.utils import from_networkx
+from torch_geometric.nn import Node2Vec
+from torch.optim import SparseAdam
+from torch_geometric.data import Data
+import os
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '../../../..'))
 
 
-def load_model(graph_name, n_nodes, n_clusters, device='cpu'):
-    model = SurrogateGNN(n_nodes, n_clusters)
-    model_path = f'src/community_detection/surrogate/models/surrogate_gnn_{graph_name}.pth'
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.to(device)
-    model.eval()
-    return model
+class SurrogateGNN(nn.Module):
+    def __init__(self, n_nodes, emb_dim=128, hidden1=256, hidden2=256, out_dim=64):
+        super().__init__()
+        self.embedding = nn.Embedding(n_nodes, emb_dim)
+        self.gcn1 = GCNConv(emb_dim, hidden1)
+        self.gcn2 = GCNConv(hidden1, hidden2)
+        self.gcn3 = GCNConv(hidden2, out_dim) 
 
-def predict_clusters(model, graph, device='cpu'):
-    data = from_ig_graph_to_geometric_data(graph)
+    def forward(self, data):
+        x = self.embedding(torch.arange(data.num_nodes, device=data.edge_index.device))
+        x = self.gcn1(x, data.edge_index)
+        x = F.relu(x)
+        x = F.dropout(x, training=self.training)
+        x = self.gcn2(x, data.edge_index)
+        x = F.relu(x)
+        x = F.dropout(x, training=self.training)
+        x = self.gcn3(x, data.edge_index)
+        return x  
+    
+
+def from_ig_graph_to_node2vec_geometric_data(graph: ig.Graph) -> Data:
+    """
+    Convert an igraph graph to a PyTorch Geometric Data object.
+    """
+    
+    # Salva il livello di log corrente
+    original_level = logging.root.level
+    
+    # Imposta temporaneamente il livello di log a ERROR per silenziare i messaggi di info/warning
+    logging.root.setLevel(logging.ERROR)
+    
+    try:
+        g_undir = graph.as_undirected()
+        nx_graph = g_undir.to_networkx()
+        data = from_networkx(nx_graph)
+        edge_index = data.edge_index       
+        data = Data(edge_index=edge_index)
+        data.num_nodes = graph.vcount()
+        return data
+
+    finally:
+        # Ripristina il livello di log originale
+        logging.root.setLevel(original_level)
+
+def SurrogateCluster(graph: ig.Graph, graph_name: str) -> list:
+    """
+    DGCluster algorithm for community detection.
+    
+    Parameters
+    ----------
+    graph : ig.Graph
+        The graph to be clustered
+    graph_name : str
+        The name of the graph
+    
+    Returns
+    -------
+    list
+        List of clusters
+    """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    #graph_name = getattr(DatasetNames, graph_name).value
+    #model_path = f"{ROOT_DIR}/temp_cmh/src/community_detection/surrogate/models/surrogate_gcn_{graph_name}_10_0.001_22.pth"
+    model_path = f"{ROOT_DIR}/temp_cmh/src/community_detection/surrogate/models/surrogate_gcn_{graph_name}.pth"
+    # Convert the igraph graph to PyTorch Geometric Data object
+    data = from_ig_graph_to_node2vec_geometric_data(graph)
     data = data.to(device)
-    with torch.no_grad():
-        logits = model(data)  # [n_nodes, n_clusters]
-        pred_labels = torch.argmax(logits, dim=1).cpu().numpy()
-    return pred_labels
-
-def main():
-    parser = argparse.ArgumentParser(description='Esegui clustering con SurrogateGNN')
-    parser.add_argument('--graph_name', type=str, required=True, help='Nome del grafo (es. KAR)')
-    parser.add_argument('--alg', type=str, default='LEID', help='Algoritmo di env (default: LEID)')
-    parser.add_argument('--graph_path', type=str, default=None, help='Path opzionale al file del grafo')
-    args = parser.parse_args()
-
-    # Carica grafo e env
-    if args.graph_path:
-        graph = Utils.import_graph(args.graph_path)
-        n_nodes = graph.vcount()
-        env = GraphEnvironment(args.graph_name, [args.alg])
+    # Load the pre-trained model
+    in_dim = 128
+    out_dim = 64
+    model = SurrogateGNN(n_nodes=data.num_nodes).to(device)
+    model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
+    model.eval()
+    x = model(data)
+    clusters = Birch(n_clusters=None, threshold=0.5).fit_predict(x.detach().cpu().numpy(), y=None)
+    if clusters.max() < 0:
+        # If there aren't any clusters, create a single cluster
+        surrogate = [list(range(len(clusters)+1))]
     else:
-        env = GraphEnvironment(args.graph_name, [args.alg])
-        graph = env.original_graph.copy()
-        n_nodes = graph.vcount()
-
-    # Determina n_clusters dal modello salvato (puoi anche passarlo come argomento o dedurlo da un file di config)
-    # Qui assumiamo n_clusters = max label + 1 dal training set
-    # Per sicurezza, puoi caricare il dataset di training e calcolare n_clusters
-    # Qui esempio statico:
-    n_clusters = 4  # Sostituisci con il valore corretto per il tuo grafo
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = load_model(args.graph_name, n_nodes, n_clusters, device=device)
-    pred_labels = predict_clusters(model, graph, device=device)
-    print(f"Cluster labels per ogni nodo: {pred_labels}")
-
-if __name__ == "__main__":
-    main() 
+        surrogate = [list(np.where(clusters == i)[0]) for i in range(clusters.min(), clusters.max() + 1)]
+    node_cluster = cdlib.NodeClustering(surrogate, graph, method_name="DGCluster")
+    
+    return node_cluster

@@ -4,8 +4,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 import igraph as ig
 from src.community_detection.algorithms import CommunityDetectionAlg
 from src.baselines.degree import DegreeHiding
-from src.community_detection.extra_algs.dgcluster.dgcluster import DGCluster
-from src.community_detection.extra_algs.locale.locale import ig_leiden_locale
 from cdlib import NodeClustering
 from sklearn.cluster import AgglomerativeClustering
 from torch_geometric.data import Data
@@ -61,7 +59,7 @@ def generate_surrogate_dataset(graph: ig.Graph, env, max_nodes=500, max_modifica
     # Original clusters
     leiden = CommunityDetectionAlg('leiden', env).community_detection(graph)
     walktrap = CommunityDetectionAlg('walktrap', env).community_detection(graph)
-    dgcluster = DGCluster(graph, env.graph_name)
+    dgcluster = CommunityDetectionAlg('dgcluster', env).community_detection(graph)
     clusterings = [
         nodeclustering_to_dict(leiden, n_nodes),
         nodeclustering_to_dict(walktrap, n_nodes),
@@ -83,7 +81,7 @@ def generate_surrogate_dataset(graph: ig.Graph, env, max_nodes=500, max_modifica
             # Recalculate the clusters
             leiden_p = CommunityDetectionAlg('leiden', env).community_detection(pert_graph)
             walktrap_p = CommunityDetectionAlg('walktrap', env).community_detection(pert_graph)
-            dgcluster_p = DGCluster(pert_graph, env.graph_name)
+            dgcluster_p = CommunityDetectionAlg('dgcluster', env).community_detection(pert_graph)
             clusterings_p = [
                 nodeclustering_to_dict(leiden_p, n_nodes),
                 nodeclustering_to_dict(walktrap_p, n_nodes),
