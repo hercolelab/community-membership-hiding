@@ -1,4 +1,3 @@
-from sdp_clustering import leiden_locale
 from scipy.io import mmread
 import igraph as ig
 from cdlib import NodeClustering

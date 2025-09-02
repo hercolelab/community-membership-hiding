@@ -40,6 +40,8 @@ Available Evasion Attack Algorithms:
     - DICE:  Dice
     - NABLA: Nabla-CMH
     - NABLAP: Nabla-CMH-Proj
+    - CLU:   clustering
+    - TRI:   triad-breaking
     - DRL:   DRL-Agent     
     - GRE:   Greedy (not supported yet)
 
@@ -49,16 +51,16 @@ Suggested Parameters:
 """
 
 # ------ EXPERIMENTS CONFIGURATION ------ #
-graph_names = ["KAR", "WORDS", "VOTE", "POW", "FB_75", "COND_MAT"]
+graph_names = ["KAR", "WORDS"]
 #graph_names = ["KAR"]
 
-community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF", "LAB", "SCD", "LOC", "DGC"]
+community_detection_algs = ["GRE", "LOUV", "LEID", "WALK", "INF"]
 #community_detection_algs = ["GRE", "LEID", "WALK", "DGC"]
 
 
 
-#evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA" , "NABLAP", "DRL"] 
-evasion_algs = ["NABLAP"]
+#evasion_algs = ["RAND", "DEG", "BETW", "ROAM", "DICE", "NABLA" , "NABLAP","CLU", "TRI", "DRL"] 
+evasion_algs = ["CLU"]
 
 beta_factors = [0.5,1,2]
 #beta_factors = [1]

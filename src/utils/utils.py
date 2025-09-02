@@ -86,6 +86,8 @@ class EvasionAlgorithmsNames(Enum):
     NABLAP = "nabla-cmh-projected"
     DRL = "drl-agent"
     GRE = "greedy"
+    CLU = "clustering"
+    TRI = "triad-breaking"
 
 class ExperimentHyps(Enum):
     """Enum class for the experiment hyperparameters"""

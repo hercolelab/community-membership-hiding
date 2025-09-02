@@ -4,12 +4,8 @@ community_detection_algs:
 - LEID
 - WALK
 - INF
-- LAB
-- SCD
-- LOC
-- DGC
 evasion_attack_algs:
-- NABLAP
+- CLU
 budget_multipliers:
 - 0.5
 - 1
@@ -20,7 +16,3 @@ seed: 2025
 graphs:
 - KAR
 - WORDS
-- VOTE
-- POW
-- FB_75
-- COND_MAT
