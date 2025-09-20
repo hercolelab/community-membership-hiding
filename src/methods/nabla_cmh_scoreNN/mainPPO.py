@@ -43,11 +43,13 @@ def train():
 
     # === Ciclo di training ===
     num_episodes = 100
+    MAX_STEPS = 100   # limite massimo di passi per episodio
     for ep in range(num_episodes):
         # Reset dell'ambiente a inizio episodio
         state = adapter.reset()
         done = False
         total_reward = 0
+        step_count = 0  # contatore dei passi
 
         while not done:
             # 1. L'agente sceglie un'azione (vettore) a partire dallo stato corrente
@@ -62,6 +64,12 @@ def train():
             # 4. Aggiorniamo lo stato e accumuliamo il reward
             state = next_state
             total_reward += reward
+            step_count += 1
+
+            # Evita loop infiniti → stop forzato
+            if step_count >= MAX_STEPS:
+                print(f"Episode {ep}: raggiunto limite MAX_STEPS={MAX_STEPS}, forzo terminazione.")
+                done = True
 
         # Alla fine dell'episodio aggiorniamo la policy PPO con le esperienze accumulate
         agent.update()

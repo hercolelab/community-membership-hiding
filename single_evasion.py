@@ -129,7 +129,7 @@ def main(cfg: DictConfig) -> None:
             evasion_alg = DiceHiding(env, target_node, env.budget)
         elif alg == EvasionAlgorithmsNames.NABLA.name:
             evasion_alg = nablaCMH(env, target_node, env.budget)
-        elif alg == EvasionAlgorithmsNames.NABLA_PROJ.name:
+        elif alg == EvasionAlgorithmsNames.NABLAP.name:
             evasion_alg = nablaCMH_proj(env, target_node, env.budget)
         elif alg == EvasionAlgorithmsNames.DRL.name:
             evasion_alg = Agent(env)
@@ -139,7 +139,7 @@ def main(cfg: DictConfig) -> None:
         # Set the hiding function
         if alg == EvasionAlgorithmsNames.NABLA.name:
             func_call = lambda: evasion_alg.community_membership_hiding(verbose_iterations=True)  
-        elif alg == EvasionAlgorithmsNames.NABLA_PROJ.name:
+        elif alg == EvasionAlgorithmsNames.NABLAP.name:
             func_call = lambda: evasion_alg.community_membership_hiding(verbose_iterations=True)  
         elif alg == EvasionAlgorithmsNames.DRL.name:
                             func_call = lambda: evasion_alg.test(
@@ -162,7 +162,7 @@ def main(cfg: DictConfig) -> None:
         # Unpack variables based on algorithm type
         if alg == EvasionAlgorithmsNames.NABLA.name:
             new_graph, steps, changes, add_results = result  # nabla-cmh returns an extra value
-        elif alg == EvasionAlgorithmsNames.NABLA_PROJ.name:
+        elif alg == EvasionAlgorithmsNames.NABLAP.name:
             new_graph, steps, changes, add_results = result  # nabla-cmh returns an extra value
         else:
             new_graph, steps, changes = result  
@@ -178,7 +178,7 @@ def main(cfg: DictConfig) -> None:
             "nmi": nmi,
             "time": total_time
         }
-        if alg == EvasionAlgorithmsNames.NABLA.name or alg == EvasionAlgorithmsNames.NABLA_PROJ.name:
+        if alg == EvasionAlgorithmsNames.NABLA.name or alg == EvasionAlgorithmsNames.NABLAP.name:
             results[getattr(EvasionAlgorithmsNames,alg).value]["additional_results"] = add_results
             
         log.info("="*60)
