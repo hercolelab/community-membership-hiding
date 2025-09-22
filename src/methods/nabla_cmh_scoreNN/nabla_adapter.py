@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 class NablaAdapter:
     """
@@ -23,15 +24,31 @@ class NablaAdapter:
         Reset dell'ambiente di base.
         Restituisce lo stato iniziale in formato numpy.float32
         """
-        state = self.env.reset()
-        return np.array(state, dtype=np.float32)
+        # Generiamo uno stato dummy, ad esempio un vettore zero
+        state = np.zeros(self.env.original_graph.vcount(), dtype=np.float32)
+        return state
 
     def step(self, action_vector):
         """
         Step adattato:
-        - PPO genera un action_vector (il nostro "vettore di punteggi")
-        - Questo viene passato a NABLA, che esegue la sua logica sul grafo.
-        - NABLA restituisce: next_state, reward, done, info
+        - PPO genera un action_vector
+        - Viene simulata la logica di NABLA senza modificare il file nabla
         """
-        next_state, reward, done, info = self.nabla.step(self.env, action_vector)
-        return np.array(next_state, dtype=np.float32), reward, done, info
+        # Applichiamo il vettore come perturbazione iniziale
+        self.nabla.a_u = torch.tensor(action_vector, dtype=torch.float32, device=self.nabla.device)
+
+        # Chiamata alla funzione principale di CMH
+        g_prime, budget_used, changes, _ = self.nabla.community_membership_hiding(verbose_iterations=False)
+
+        # Stato successivo dummy
+        next_state = np.zeros(self.env.original_graph.vcount(), dtype=np.float32)
+
+        # Reward semplice
+        reward = float(len(changes.get("removed", [])) - len(changes.get("added", [])))
+
+        # Done se budget superato o goal raggiunto
+        done = budget_used >= self.nabla.budget
+
+        info = {"changes": changes}
+
+        return next_state, reward, done, info
