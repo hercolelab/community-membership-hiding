@@ -10,78 +10,78 @@ from src.graph_environment.env import GraphEnvironment
 from src.utils.utils import FilePaths
 
 
-def plot_and_save(results, save_dir):
+def plot_and_save(results, save_dir, prefix=""):
     """
-    Funzione di supporto per plottare e salvare i risultati del training.
-    Genera i grafici di reward, steps, loss e done.
+    Salva i grafici dei risultati. 
+    Se prefix è impostato, aggiunge il prefisso al nome dei file, utile per checkpoint intermedi.
+    Genera grafici separati per reward, steps, loss e done.
     """
     episodes = range(len(results["reward"]))
+    metrics = ["reward", "steps", "loss", "done"]
+    titles = ["Reward", "Steps", "Loss", "Done (0=forzato, 1=normale)"]
 
-    # === Reward ===
-    plt.figure()
-    plt.plot(episodes, results["reward"])
-    plt.xlabel("Episode")
-    plt.ylabel("Reward")
-    plt.title("Reward per episodio")
-    plt.grid(True)
-    plt.savefig(os.path.join(save_dir, "reward.png"))
-    plt.close()
-
-    # === Steps ===
-    plt.figure()
-    plt.plot(episodes, results["steps"])
-    plt.xlabel("Episode")
-    plt.ylabel("Steps")
-    plt.title("Steps per episodio")
-    plt.grid(True)
-    plt.savefig(os.path.join(save_dir, "steps.png"))
-    plt.close()
-
-    # === Loss ===
-    plt.figure()
-    plt.plot(episodes, results["loss"])
-    plt.xlabel("Episode")
-    plt.ylabel("Loss")
-    plt.title("Loss per episodio")
-    plt.grid(True)
-    plt.savefig(os.path.join(save_dir, "loss.png"))
-    plt.close()
-
-    # === Done ===
-    plt.figure()
-    plt.plot(episodes, results["done"])
-    plt.xlabel("Episode")
-    plt.ylabel("Done (0=forzato, 1=normale)")
-    plt.title("Done per episodio")
-    plt.grid(True)
-    plt.savefig(os.path.join(save_dir, "done.png"))
-    plt.close()
+    for metric, title in zip(metrics, titles):
+        plt.figure()
+        plt.plot(episodes, results[metric])
+        plt.xlabel("Episode")
+        plt.ylabel(title)
+        plt.title(f"{title} per episodio")
+        plt.grid(True)
+        filename = f"{prefix}_{metric}.png" if prefix else f"{metric}.png"
+        plt.savefig(os.path.join(save_dir, filename))
+        plt.close()
 
 
-def train():
+def save_checkpoint(agent, episode, save_dir):
+    """Salva il checkpoint del modello e dell'ottimizzatore."""
+    ckpt_path = os.path.join(save_dir, f"checkpoint_ep{episode}.pth")
+    torch.save({
+        'episode': episode,
+        'model_state_dict': agent.model.state_dict(),
+        'optimizer_state_dict': agent.optimizer.state_dict()
+    }, ckpt_path)
+    print(f"Checkpoint salvato all'episodio {episode} in {ckpt_path}")
+    return ckpt_path
+
+
+def load_checkpoint(agent, checkpoint_path):
     """
-    Funzione principale di training.
-    Qui avviene il ciclo di addestramento PPO collegato a NABLA_CMH tramite l'adapter.
+    Carica un checkpoint esistente.
+    - checkpoint_path: percorso completo al file .pth salvato
+    Restituisce l'episodio da cui ripartire.
+    """
+    checkpoint = torch.load(checkpoint_path)
+    agent.model.load_state_dict(checkpoint['model_state_dict'])
+    agent.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    print(f"Checkpoint caricato dall'episodio {checkpoint['episode']}")
+    return checkpoint['episode']
+
+
+def train(resume_checkpoint=None):
+    """
+    Funzione principale di training PPO collegato a NABLA_CMH tramite l'adapter.
+    
+    Parameters
+    ----------
+    resume_checkpoint : str, default=None
+        Percorso completo del checkpoint da cui riprendere. Esempio:
+        "results/ppo_training_20250922_120000/checkpoint_ep200.pth"
+        Se None, il training parte da zero.
     """
 
-    # === Setup cartella risultati divisa con data e ora ===
-    ### TIMESTAMP RUN (puoi rimuoverla se vuoi sovrascrivere ogni volta)
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # directory di questo file
+    # --- Cartella dei risultati ---
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
     SAVE_DIR = os.path.join(BASE_DIR, "results", f"ppo_training_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}")
     os.makedirs(SAVE_DIR, exist_ok=True)
 
-    # === Setup cartella risultati sovrascribile ===
-    # BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
-    # SAVE_DIR = os.path.join(BASE_DIR, "results", "ppo_training")  
-    # os.makedirs(SAVE_DIR, exist_ok=True)
-
-    # === Setup dell'ambiente ===
+    # --- Parametri dell'ambiente ---
     graph_name = "KAR"
     alg = ["GRE"]
     tau = 0.5
     c_beta = 1
     graph_path = getattr(FilePaths, graph_name).value
 
+    # --- Inizializzazione ambiente e NABLA ---
     env = GraphEnvironment(
         graph_name=graph_name,
         community_detection_algs=alg,
@@ -89,25 +89,27 @@ def train():
         similarity_threshold=tau,
         graph_path=graph_path,
     )
-
-    # Inizializziamo NABLA
-    nabla = nablaCMH(env,target_node=5,budget=0.5)
-
-    # Adapter PPO ↔ NABLA
+    nabla = nablaCMH(env, target_node=5, budget=0.5) # Inserire numero nodo (target_node) e budget (budget) da voler trainare
     adapter = NablaAdapter(env, nabla)
 
-    # === Setup agente PPO ===
+    # --- Setup agente PPO ---
     state_dim = env.original_graph.vcount()  # numero di nodi = dimensione dello stato
     action_dim = env.original_graph.vcount() # numero di nodi = dimensione dell'azione
     agent = PPOAgent(state_dim, action_dim)
 
-    # === Ciclo di training ===
-    num_episodes = 1000
-    MAX_STEPS = 200
+    # --- Caricamento checkpoint se presente ---
+    start_episode = 0
+    if resume_checkpoint:
+        start_episode = load_checkpoint(agent, resume_checkpoint)
+
+    # --- Parametri training ---
+    num_episodes = 500
+    MAX_STEPS = 500
 
     rewards_log, steps_log, losses_log, done_log = [], [], [], []
 
-    for ep in range(num_episodes):
+    # --- Ciclo principale di training ---
+    for ep in range(start_episode, num_episodes):
         state = adapter.reset()
         done = False
         forced_done = False
@@ -115,6 +117,7 @@ def train():
         step_count = 0
 
         while not done:
+            # --- Selezione azione e interazione con l'ambiente ---
             action, log_prob = agent.select_action(state)
             next_state, reward, done, _ = adapter.step(action)
             agent.store_transition(state, action, reward, next_state, done, log_prob)
@@ -123,11 +126,12 @@ def train():
             total_reward += reward
             step_count += 1
 
+            # --- Termina forzatamente se raggiunto MAX_STEPS ---
             if step_count >= MAX_STEPS:
-                print(f"[Ep {ep}] MAX_STEPS={MAX_STEPS} raggiunto, termino forzatamente.")
                 forced_done = True
                 done = True
 
+        # --- Aggiornamento PPO dopo l'episodio ---
         loss = agent.update()
         losses_log.append(loss if loss is not None else 0.0)
         rewards_log.append(total_reward)
@@ -136,14 +140,13 @@ def train():
 
         print(f"[Ep {ep}] Reward={total_reward:.2f}, Steps={step_count}, Loss={loss:.4f}, Done={done_log[-1]}")
 
-        if (ep + 1) % 200 == 0:
-            ckpt_path = os.path.join(SAVE_DIR, f"checkpoint_ep{ep+1}.pth")
-            torch.save({
-                'model_state_dict': agent.model.state_dict(),
-                'optimizer_state_dict': agent.optimizer.state_dict()
-            }, ckpt_path)
+        # --- Salvataggio checkpoint e grafico intermedio ogni 100 episodi ---
+        if (ep + 1) % 100 == 0:
+            ckpt_path = save_checkpoint(agent, ep+1, SAVE_DIR)
+            results = {"reward": rewards_log, "steps": steps_log, "loss": losses_log, "done": done_log}
+            plot_and_save(results, SAVE_DIR, prefix=f"ep{ep+1}")
 
-    # === Salvataggi finali ===
+    # --- Salvataggi finali ---
     final_path = os.path.join(SAVE_DIR, "ppo_final.pth")
     torch.save({
         'model_state_dict': agent.model.state_dict(),
@@ -154,7 +157,9 @@ def train():
     with open(os.path.join(SAVE_DIR, "training_results.json"), "w") as f:
         json.dump(results, f, indent=2)
 
+    # --- Grafici finali ---
     plot_and_save(results, SAVE_DIR)
+
     print("Training completato. Risultati salvati in:", SAVE_DIR)
 
 
