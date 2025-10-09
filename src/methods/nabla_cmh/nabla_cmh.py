@@ -324,3 +324,63 @@ class nablaCMH():
         x_hat = x_hat.requires_grad_(True)
         optimizer = optim.Adam([x_hat], lr=self.lr)
         return x_hat,optimizer
+    
+    # ============================================================================= #
+    #                          RL-INTEGRATION STEP FUNCTION                         #
+    # ============================================================================= #
+    def step(self, env, action_vector: torch.Tensor):
+        """
+        Esegue un singolo step del metodo NABLA_CMH per integrazione con PPO.
+
+        Parametri
+        ----------
+        env : GraphEnvironment
+            L'ambiente corrente contenente il grafo e i metodi di valutazione.
+        action_vector : torch.Tensor
+            Vettore continuo di azioni prodotto dal PPO (score dei nodi).
+
+        Ritorna
+        -------
+        next_state : torch.Tensor
+            Feature aggiornate del grafo (output di env.get_node_features()).
+        reward : float
+            Reward calcolato in base al raggiungimento del goal.
+        done : bool
+            True se il goal di evasione è stato raggiunto.
+        info : dict
+            Informazioni opzionali di debug.
+        """
+
+        # Convertiamo in tensor (caso venga passato come numpy)
+        action_vector = torch.sigmoid(action_vector.clone().detach().to(self.device))
+
+        # L’output di PPO rappresenta la nuova "promising action"
+        self.a_u_tilde = action_vector.clone().detach()
+        self.a_u_tilde[self.u] = 0.0  # Il nodo target non deve auto-connettersi
+
+        # Applica una singola iterazione di "community_membership_hiding"
+        # con T=1 → un passo di ottimizzazione
+        g_prime, budget_used, changes, _ = self.community_membership_hiding(verbose_iterations=False)
+
+        # Calcolo del reward: inverso del grado di appartenenza alla community
+        new_communities = self.env.nabla_cmh_alg.community_detection(g_prime)
+        new_community = self.env.get_community(new_communities)
+        goal = self.env.get_evasion_goal(new_community, None)
+
+        # Reward semplice (puoi cambiare formula se vuoi)
+        reward = 1.0 if goal == 1 else -0.1
+        done = bool(goal == 1)
+
+        # Stato successivo = feature dei nodi (usiamo get_node_features dell'env)
+        next_state = env.get_node_features(g_prime)
+
+        # Info di debug per logging
+        info = {
+            "budget_used": budget_used,
+            "changes": changes,
+            "goal": goal,
+            "graph_edges": g_prime.ecount()
+        }
+
+        return next_state, reward, done, info
+    

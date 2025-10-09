@@ -304,6 +304,35 @@ class GraphEnvironment(object):
             nmis.append(nmi)
         return goals, nmis
 
+    def get_node_features(self, graph = None):
+        """
+        Restituisce un vettore di feature per ciascun nodo del grafo.
+        Funziona con igraph.
+        Le feature sono: grado, betweenness, closeness (normalizzate tra 0 e 1).
+        """
+
+        # Recupera il grafo corretto
+        G = graph if graph is not None else self.original_graph
+        if G is None:
+            raise ValueError("GraphEnvironment non contiene un grafo valido.")
+
+        # === Calcolo delle feature ===
+        degree = np.array(G.degree(), dtype=np.float32)
+        betweenness = np.array(G.betweenness(), dtype=np.float32)
+        closeness = np.array(G.closeness(), dtype=np.float32)
+
+        # Normalizzazione (0–1)
+        def normalize(x):
+            return (x - np.min(x)) / (np.max(x) - np.min(x) + 1e-8)
+
+        degree = normalize(degree)
+        betweenness = normalize(betweenness)
+        closeness = normalize(closeness)
+
+        # === Stack finale ===
+        features = np.stack([degree, betweenness, closeness], axis=1)
+        return features.astype(np.float32)
+
 
     # ============================================================================= #
     #                             ENVIRONMENT INFO                                  #

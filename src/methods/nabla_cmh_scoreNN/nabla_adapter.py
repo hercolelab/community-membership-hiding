@@ -18,37 +18,71 @@ class NablaAdapter:
         """
         self.env = env
         self.nabla = nabla_method
+        self.g_prime = env.original_graph.copy()
+        self.budget_used = 0
+        self.done = False
 
     def reset(self):
-        """
-        Reset dell'ambiente di base.
-        Restituisce lo stato iniziale in formato numpy.float32
-        """
-        # Generiamo uno stato dummy, ad esempio un vettore zero
-        state = np.zeros(self.env.original_graph.vcount(), dtype=np.float32)
-        return state
+        """Resetta l'ambiente e restituisce lo stato iniziale (feature nodi)."""
+        if hasattr(self.env, "reset"):
+            self.env.reset()
+
+        self.g_prime = self.env.original_graph.copy()
+        self.budget_used = 0
+        self.done = False
+        return self.env.get_node_features(self.g_prime)
 
     def step(self, action_vector):
-        """
-        Step adattato:
-        - PPO genera un action_vector
-        - Viene simulata la logica di NABLA senza modificare il file nabla
-        """
-        # Applichiamo il vettore come perturbazione iniziale
-        self.nabla.a_u = torch.tensor(action_vector, dtype=torch.float32, device=self.nabla.device)
+        if self.done:
+            raise RuntimeError("Episodio terminato, chiama reset().")
 
-        # Chiamata alla funzione principale di CMH
-        g_prime, budget_used, changes, _ = self.nabla.community_membership_hiding(verbose_iterations=False)
+        # Converti e normalizza il vettore azione
+        action_vector = torch.tensor(action_vector, dtype=torch.float32).flatten()
+        num_nodes = self.env.original_graph.vcount()
+        if action_vector.numel() != num_nodes:
+            action_vector = action_vector.repeat(num_nodes)[:num_nodes]
+        action_vector = torch.sigmoid(action_vector)
 
-        # Stato successivo dummy
-        next_state = np.zeros(self.env.original_graph.vcount(), dtype=np.float32)
+        # Aggiorna lo stato interno di Nabla
+        self.nabla.a_u_tilde = action_vector.clone().detach()
+        self.nabla.a_u_tilde[self.env.target_node] = 0.0
 
-        # Reward semplice
-        reward = float(len(changes.get("removed", [])) - len(changes.get("added", [])))
+        # === Esegui UN passo di CMH ===
+        g_new, budget_used, changes, _ = self.nabla.community_membership_hiding(verbose_iterations=False)
 
-        # Done se budget superato o goal raggiunto
-        done = budget_used >= self.nabla.budget
+        # Aggiorna budget e grafo se cambiano
+        if g_new is not None:
+            self.g_prime = g_new
+        self.budget_used += budget_used
 
-        info = {"changes": changes}
+        # Calcolo del reward
+        new_communities = self.env.nabla_cmh_alg.community_detection(self.g_prime)
+        new_community = self.env.get_community(new_communities)
+        goal = self.env.get_evasion_goal(new_community, None)
 
-        return next_state, reward, done, info
+        # Sistemare reward 1.0 perchè rischio troppo piccolo rimane sempre 1 e anche la penalty, giocare con i numeri
+
+        if goal == 1:
+            reward = 1.0
+            self.done = True
+        else:
+            old_community = self.env.nabla_cmh_target_community.copy()
+            old_community.remove(self.env.target_node)
+            overlap = len(set(new_community).intersection(old_community))
+            reward = 1.0 - overlap / max(len(old_community), 1)
+
+        # Stato successivo
+        features = torch.tensor(self.env.get_node_features(self.g_prime), dtype=torch.float32).flatten()
+
+        # Condizione di terminazione
+        if self.budget_used >= self.nabla.budget:
+            self.done = True
+
+        info = {
+            "budget_used": self.budget_used,
+            "changes": changes,
+            "goal": goal,
+            "graph_edges": self.g_prime.ecount()
+        }
+
+        return features, float(reward), self.done, info

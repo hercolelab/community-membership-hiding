@@ -90,12 +90,18 @@ def train(resume_checkpoint=None):
         graph_path=graph_path,
     )
     nabla = nablaCMH(env, target_node=5, budget=0.5) # Inserire numero nodo (target_node) e budget (budget) da voler trainare
+    # Impostazione iperparametri NABLA consigliati 
+    nabla.T = 150
+    nabla.lr = 0.05
+    nabla.lambd = 1.0
     adapter = NablaAdapter(env, nabla)
 
-    # --- Setup agente PPO ---
-    state_dim = env.original_graph.vcount()  # numero di nodi = dimensione dello stato
-    action_dim = env.original_graph.vcount() # numero di nodi = dimensione dell'azione
+    # === Setup agente PPO ===
+    features = env.get_node_features()
+    state_dim = features.size 
+    action_dim = env.original_graph.vcount()
     agent = PPOAgent(state_dim, action_dim)
+    
 
     # --- Caricamento checkpoint se presente ---
     start_episode = 0
@@ -103,8 +109,8 @@ def train(resume_checkpoint=None):
         start_episode = load_checkpoint(agent, resume_checkpoint)
 
     # --- Parametri training ---
-    num_episodes = 500
-    MAX_STEPS = 500
+    num_episodes = 360
+    MAX_STEPS = 80
 
     rewards_log, steps_log, losses_log, done_log = [], [], [], []
 
@@ -119,7 +125,7 @@ def train(resume_checkpoint=None):
         while not done:
             # --- Selezione azione e interazione con l'ambiente ---
             action, log_prob = agent.select_action(state)
-            next_state, reward, done, _ = adapter.step(action)
+            next_state, reward, done, info = adapter.step(action)
             agent.store_transition(state, action, reward, next_state, done, log_prob)
 
             state = next_state
@@ -131,6 +137,9 @@ def train(resume_checkpoint=None):
                 forced_done = True
                 done = True
 
+             # --- Logging step ---
+            # print(f"Step {step_count}: reward={reward:.3f}, done={done}, budget_used={info['budget_used']}, changes={info['changes']}, edges={info['graph_edges']}")
+            
         # --- Aggiornamento PPO dopo l'episodio ---
         loss = agent.update()
         losses_log.append(loss if loss is not None else 0.0)
@@ -141,7 +150,7 @@ def train(resume_checkpoint=None):
         print(f"[Ep {ep}] Reward={total_reward:.2f}, Steps={step_count}, Loss={loss:.4f}, Done={done_log[-1]}")
 
         # --- Salvataggio checkpoint e grafico intermedio ogni 100 episodi ---
-        if (ep + 1) % 100 == 0:
+        if (ep + 1) % 120 == 0:
             ckpt_path = save_checkpoint(agent, ep+1, SAVE_DIR)
             results = {"reward": rewards_log, "steps": steps_log, "loss": losses_log, "done": done_log}
             plot_and_save(results, SAVE_DIR, prefix=f"ep{ep+1}")

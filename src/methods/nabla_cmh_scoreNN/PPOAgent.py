@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import numpy as np
 from torch.distributions import Normal
 
 
@@ -30,6 +31,9 @@ class ValuePolicy(nn.Module):
         La policy e il value sono separati solo "logicamente",
         ma condividono le prime due fully connected.
         """
+        if state.dim() == 1:
+            state = state.unsqueeze(0)  # garantisce forma (1, state_dim)
+
         x = torch.relu(self.fc1(state))
         x = torch.relu(self.fc2(x))
 
@@ -48,7 +52,8 @@ class PPOAgent:
     - Calcola valori con ValueNetwork
     - Aggiorna policy e value secondo l'algoritmo PPO
     """
-    def __init__(self, state_dim, action_dim, lr=3e-4, gamma=0.99, clip_eps=0.2, update_steps=10):
+    def __init__(self, state_dim=3, action_dim=1, lr=3e-4, gamma=0.99, clip_eps=0.2, update_steps=10):
+        # Ora state_dim=3 per il vettore medio delle feature
         self.model = ValuePolicy(state_dim, action_dim)
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
         self.gamma = gamma
@@ -72,15 +77,25 @@ class PPOAgent:
     # ========================================================= #
     def select_action(self, state):
         """
-        Dato lo stato → campiona un'azione dalla distribuzione della policy.
-        Restituisce sia il vettore di azioni che la sua log-probabilità.
+        Dato lo stato (feature dei nodi) → campiona un'azione dalla distribuzione della policy.
+        Restituisce:
+            - action_vector normalizzato tra 0 e 1
+            - log_prob
         """
+        # Appiattisci lo stato (n_nodes x 3 → 1D)
         state = torch.tensor(state, dtype=torch.float32)
+        if len(state.shape) == 2:  # se è matrice (num_nodes x features)
+            state = state.flatten()
+        state = state.unsqueeze(0)  # aggiungi batch dimensione
+
         mean, std, _ = self.model(state)
-        dist = Normal(mean, std)
-        action = dist.sample()  # il "vettore" che sarà passato a NABLA
+        dist = torch.distributions.Normal(mean, std)
+        action = dist.sample()           # campionamento reale
+        action = torch.sigmoid(action)   # normalizzazione in [0,1]
         log_prob = dist.log_prob(action).sum()
-        return action.detach().numpy(), log_prob.detach()
+
+        return action.detach().numpy().flatten(), log_prob.detach()
+
 
     def store_transition(self, state, action, reward, next_state, done, log_prob):
         """Salva una transizione nel buffer"""
@@ -98,7 +113,11 @@ class PPOAgent:
         """
         returns = []
         R = 0
-        next_state = torch.tensor(next_state, dtype=torch.float32)
+        # Se lo stato è una matrice (es. 34x3), appiattiscilo
+        if isinstance(next_state, np.ndarray):
+            next_state = next_state.flatten()
+        next_state = torch.tensor(next_state, dtype=torch.float32).unsqueeze(0)
+
         # bootstrap con il valore stimato dello stato finale
         _, _, value_next = self.model(next_state)
         R = value_next.item()
@@ -121,7 +140,9 @@ class PPOAgent:
         - Restituisce la loss media fatta sui passi di update (utile per logging/plot)
         """
         # Convertiamo buffer in tensori
-        states = torch.tensor(self.states, dtype=torch.float32)
+        # Appiattisci ogni stato (es. 34x3 → 102)
+        flattened_states = [np.array(s).flatten() for s in self.states]
+        states = torch.tensor(flattened_states, dtype=torch.float32)
         actions = torch.tensor(self.actions, dtype=torch.float32)
         old_log_probs = torch.stack(self.log_probs).detach()
         returns = torch.tensor(
@@ -162,4 +183,7 @@ class PPOAgent:
 
         # Calcola e restituisci la loss media sugli update steps
         mean_loss = sum(losses) / len(losses) if len(losses) > 0 else 0.0
+
+        print(f"[DEBUG] PPO Update → Mean Loss: {mean_loss:.5f}")
+
         return mean_loss
