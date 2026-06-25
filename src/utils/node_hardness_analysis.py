@@ -25,10 +25,13 @@ For every detection algorithm in ``DETECTION_ALGS`` we:
 3.  Join those features with the per-target-node outcome (success rate, i.e. the
     ``goal`` field, 1 = node successfully hidden) of every evasion method, pooled
     across seeds and budget factors.
-4.  Produce two complementary views (per-dataset, pooled-per-algorithm across
-    datasets, and fully pooled). Each view is a folder of one PDF per feature:
-        A. difficulty_curves/      : success rate vs binned feature, one line per method
-        B. outcome_distributions/  : feature distribution split by hidden/not-hidden
+4.  Produce difficulty curves (per-dataset, pooled-per-algorithm across datasets,
+    and fully pooled): success rate vs a three-group split of each feature, one
+    line per method. One PDF per feature is written directly into the detection
+    algorithm's main directory. The groups are:
+        - community_size                : Small / Medium / Big (always three sizes)
+        - every other feature           : Low (0-70%), Medium (70-90%), High (90-100%)
+          where the cut points refer to the node's percentile rank for that feature.
 
 All artefacts are written under ``outputs_review/hardness/``.
 
@@ -140,7 +143,12 @@ EXTRA_FEATURES: List[tuple] = [
     ("participation_coef", "Participation coefficient"),
 ]
 
-N_BINS = 5  # quantile bins for the difficulty curves
+# Three-group split used by the difficulty curves.
+#   - non-community-size features: percentile-rank groups.
+#   - community size: direct Small / Medium / Big (always three sizes).
+PCT_BIN_EDGES = [0.0, 0.7, 0.9, 1.0]
+PCT_BIN_LABELS = ["Low\n(0-70%)", "Medium\n(70-90%)", "High\n(90-100%)"]
+COMM_SIZE_LABELS = ["Small", "Medium", "Big"]
 
 # Colours for the per-feature lines in the NABLA-only overview plot.
 FEATURE_LINE_COLORS = ["#1019C7", "#018E20", "#DE8D00", "#8F00A2", "#B40F00",
@@ -389,35 +397,41 @@ def build_master_table(datasets: List[str], algs: List[str]) -> pd.DataFrame:
 #                                   PLOTS                                       #
 # ----------------------------------------------------------------------------- #
 
-def _percentile_rank(df: pd.DataFrame, feature: str, group_cols: List[str]) -> pd.Series:
-    """Percentile rank (0-1) of ``feature`` within each group (for cross-dataset pooling)."""
-    return df.groupby(group_cols)[feature].rank(pct=True)
+def _assign_groups(d: pd.DataFrame, feat: str, group_cols: List[str]) -> List[str]:
+    """
+    Add an integer ``bin`` column (1..3) to ``d`` and return the ordered x-tick labels.
+
+    * ``community_size`` -> direct Small / Medium / Big split (always three sizes),
+      using a dense rank of the size within each ``group_cols`` group.
+    * every other feature -> percentile-rank groups Low (0-70%), Medium (70-90%),
+      High (90-100%), the percentile rank being computed within each group.
+    """
+    if feat == "community_size":
+        rank = d.groupby(group_cols)[feat].rank(method="dense")
+        d["bin"] = rank.clip(upper=len(COMM_SIZE_LABELS))
+        return COMM_SIZE_LABELS
+
+    pct = d.groupby(group_cols)[feat].rank(pct=True)
+    d["bin"] = pd.cut(
+        pct, bins=PCT_BIN_EDGES, labels=[1, 2, 3], include_lowest=True
+    ).astype("float")
+    return PCT_BIN_LABELS
 
 
 def plot_difficulty_curves(df: pd.DataFrame, features: List[tuple], title: str,
-                           save_dir: str, pooled: bool) -> None:
+                           save_dir: str) -> None:
     """
-    Plot A: success rate vs binned feature, one line per method. One separate PDF per
-    feature is written into ``save_dir``.
-
-    ``pooled``: if True, features are binned by within-(dataset,alg) percentile rank so
-    different datasets can be combined; otherwise by raw-value quantiles.
+    Success rate vs the three-group split of each feature, one line per method.
+    One separate PDF per feature is written into ``save_dir``.
     """
     group_cols = ["dataset", "detection_alg"]
     check_dir(save_dir)
 
     for feat, label in features:
         d = df[["method_name", "goal", feat] + group_cols].copy()
-        if pooled:
-            d["xval"] = _percentile_rank(d, feat, group_cols)
-        else:
-            d["xval"] = d[feat]
-        d = d.dropna(subset=["xval"])
-        # Quantile bins (1..N_BINS). duplicates='drop' guards against ties.
-        try:
-            d["bin"] = pd.qcut(d["xval"], N_BINS, labels=False, duplicates="drop") + 1
-        except (ValueError, IndexError):
-            d["bin"] = pd.cut(d["xval"], N_BINS, labels=False) + 1
+        d = d.dropna(subset=[feat])
+        tick_labels = _assign_groups(d, feat, group_cols)
+        d = d.dropna(subset=["bin"])
 
         fig, ax = plt.subplots(figsize=(7.5, 5))
         sns.lineplot(
@@ -425,10 +439,11 @@ def plot_difficulty_curves(df: pd.DataFrame, features: List[tuple], title: str,
             hue_order=METHOD_ORDER, palette=METHOD_PALETTE,
             estimator="mean", errorbar=("ci", 95), marker="o", ax=ax, legend=True,
         )
-        ax.set_xlabel(f"{label}\n(low → high quantile)", fontsize=12)
+        ax.set_xlabel(label, fontsize=12)
         ax.set_ylabel("Success rate", fontsize=12)
         ax.set_ylim(-0.02, 1.02)
-        ax.set_xticks(range(1, N_BINS + 1))
+        ax.set_xticks(range(1, len(tick_labels) + 1))
+        ax.set_xticklabels(tick_labels)
         for s in ax.spines.values():
             s.set_visible(True)
             s.set_color("black")
@@ -439,14 +454,19 @@ def plot_difficulty_curves(df: pd.DataFrame, features: List[tuple], title: str,
 
 
 def plot_nabla_feature_curves(df: pd.DataFrame, features: List[tuple], title: str,
-                              save_dir: str, pooled: bool) -> None:
+                              save_dir: str) -> None:
     """
     Companion to the difficulty curves: a single plot for ``NABLA`` only, with one
-    line per node characteristic (success rate vs feature quintile). Saved as
+    line per node characteristic (success rate vs the three-group split). Saved as
     ``{save_dir}/nabla_all_features.pdf``.
 
-    Binning matches ``plot_difficulty_curves``: raw-value quantiles in the single
-    case, within-(dataset,alg) percentile-rank quantiles when pooled.
+    Binning matches ``plot_difficulty_curves``: every feature is collapsed to three
+    ordered groups (low -> high), so all characteristics share the same x positions.
+
+    The raw values behind the plotted lines are also written next to the PDF as
+    ``{save_dir}/nabla_all_features.json``. Because ``goal`` is binary, the per-group
+    counts (``n`` / ``n_success``) fully describe the underlying values, plus the
+    success rate and its dispersion (std / sem) so the curve can be reconstructed.
     """
     group_cols = ["dataset", "detection_alg"]
     check_dir(save_dir)
@@ -457,17 +477,37 @@ def plot_nabla_feature_curves(df: pd.DataFrame, features: List[tuple], title: st
 
     parts = []
     palette = {}
+    raw: Dict[str, object] = {"title": title, "method": "NABLA", "features": {}}
     for i, (feat, label) in enumerate(features):
         d = nabla[["goal", feat] + group_cols].copy()
-        d["xval"] = _percentile_rank(d, feat, group_cols) if pooled else d[feat]
-        d = d.dropna(subset=["xval"])
-        try:
-            d["bin"] = pd.qcut(d["xval"], N_BINS, labels=False, duplicates="drop") + 1
-        except (ValueError, IndexError):
-            d["bin"] = pd.cut(d["xval"], N_BINS, labels=False) + 1
+        d = d.dropna(subset=[feat])
+        tick_labels = _assign_groups(d, feat, group_cols)
+        d = d.dropna(subset=["bin"])
         d["Characteristic"] = label
         parts.append(d[["bin", "goal", "Characteristic"]])
         palette[label] = FEATURE_LINE_COLORS[i % len(FEATURE_LINE_COLORS)]
+
+        # Per-group raw values for the json sidecar.
+        groups = []
+        for b in sorted(d["bin"].dropna().unique()):
+            goals = d.loc[d["bin"] == b, "goal"].astype(int)
+            n = int(goals.size)
+            n_success = int(goals.sum())
+            idx = int(b) - 1
+            grp_label = tick_labels[idx] if 0 <= idx < len(tick_labels) else str(int(b))
+            groups.append({
+                "bin": int(b),
+                "label": grp_label.replace("\n", " "),
+                "n": n,
+                "n_success": n_success,
+                "success_rate": (n_success / n) if n else None,
+                "std": float(goals.std(ddof=1)) if n > 1 else 0.0,
+                "sem": float(goals.std(ddof=1) / np.sqrt(n)) if n > 1 else 0.0,
+            })
+        raw["features"][label] = {"feature_key": feat, "groups": groups}
+
+    with open(os.path.join(save_dir, "nabla_all_features.json"), "w") as f:
+        json.dump(raw, f, indent=2)
 
     long_df = pd.concat(parts, ignore_index=True)
 
@@ -477,10 +517,11 @@ def plot_nabla_feature_curves(df: pd.DataFrame, features: List[tuple], title: st
         hue_order=[lab for _, lab in features], palette=palette,
         estimator="mean", errorbar=("ci", 95), marker="o", ax=ax, legend=True,
     )
-    ax.set_xlabel("Feature quintile (low → high)", fontsize=12)
+    ax.set_xlabel("Feature group (low → high)", fontsize=12)
     ax.set_ylabel("Success rate", fontsize=12)
     ax.set_ylim(-0.02, 1.02)
-    ax.set_xticks(range(1, N_BINS + 1))
+    ax.set_xticks([1, 2, 3])
+    ax.set_xticklabels(["Low", "Medium", "High"])
     for s in ax.spines.values():
         s.set_visible(True)
         s.set_color("black")
@@ -490,77 +531,33 @@ def plot_nabla_feature_curves(df: pd.DataFrame, features: List[tuple], title: st
     plt.close(fig)
 
 
-def plot_outcome_distributions(df: pd.DataFrame, features: List[tuple], title: str,
-                               save_dir: str, pooled: bool) -> None:
-    """
-    Plot B: distribution of each feature split by outcome (hidden vs not), per method.
-    x = method, split violin by outcome. One separate PDF per feature into ``save_dir``.
-    """
-    group_cols = ["dataset", "detection_alg"]
-    check_dir(save_dir)
-
-    for feat, label in features:
-        d = df[["method_name", "goal", feat] + group_cols].copy()
-        d["yval"] = _percentile_rank(d, feat, group_cols) if pooled else d[feat]
-        d = d.dropna(subset=["yval"])
-        d["Outcome"] = np.where(d["goal"] == 1, "Hidden", "Not hidden")
-
-        fig, ax = plt.subplots(figsize=(9, 5))
-        sns.violinplot(
-            data=d, x="method_name", y="yval", hue="Outcome",
-            order=METHOD_ORDER, hue_order=["Hidden", "Not hidden"],
-            split=True, cut=0, density_norm="width", inner="quartile",
-            palette={"Hidden": "#1019C7", "Not hidden": "#B40F00"}, ax=ax,
-        )
-        ylab = f"{label} (percentile)" if pooled else label
-        ax.set_ylabel(ylab, fontsize=12)
-        ax.set_xlabel("")
-        ax.set_title(title, fontsize=12)
-        ax.tick_params(axis="x", rotation=30)
-        ax.legend(loc="best", fontsize=8, frameon=False)
-        for s in ax.spines.values():
-            s.set_visible(True)
-            s.set_color("black")
-        fig.savefig(os.path.join(save_dir, f"{feat}.pdf"), bbox_inches="tight", dpi=300)
-        plt.close(fig)
-
-
 # ----------------------------------------------------------------------------- #
 #                                   DRIVER                                      #
 # ----------------------------------------------------------------------------- #
 
 def make_all_plots(df: pd.DataFrame, features: List[tuple], algs: List[str]) -> None:
-    """Generate per-dataset, pooled-per-algorithm and fully-pooled figures."""
+    """Generate per-dataset, pooled-per-algorithm and fully-pooled difficulty curves."""
     sns.set_theme(style="whitegrid")
 
     # --- per (dataset, detection algorithm) --- #
     for (dataset, alg), sub in df.groupby(["dataset", "detection_alg"]):
         base = os.path.join(OUT_DIR, dataset, alg)
         title = f"{dataset} — {alg}"
-        curves_dir = os.path.join(base, "difficulty_curves")
-        plot_difficulty_curves(sub, features, title, curves_dir, pooled=False)
-        plot_nabla_feature_curves(sub, features, title, curves_dir, pooled=False)
-        plot_outcome_distributions(sub, features, title,
-                                   os.path.join(base, "outcome_distributions"), pooled=False)
+        plot_difficulty_curves(sub, features, title, base)
+        plot_nabla_feature_curves(sub, features, title, base)
 
     # --- pooled across datasets, per detection algorithm --- #
     for alg, sub in df.groupby("detection_alg"):
         base = os.path.join(OUT_DIR, "all_datasets", alg)
         title = f"all datasets — {alg}"
-        curves_dir = os.path.join(base, "difficulty_curves")
-        plot_difficulty_curves(sub, features, title, curves_dir, pooled=True)
-        plot_nabla_feature_curves(sub, features, title, curves_dir, pooled=True)
-        plot_outcome_distributions(sub, features, title,
-                                   os.path.join(base, "outcome_distributions"), pooled=True)
+        plot_difficulty_curves(sub, features, title, base)
+        plot_nabla_feature_curves(sub, features, title, base)
 
     # --- fully pooled across datasets and detection algorithms --- #
     base = os.path.join(OUT_DIR, "all_datasets", "pooled")
     title = "all datasets & detection algorithms"
-    curves_dir = os.path.join(base, "difficulty_curves")
-    plot_difficulty_curves(df, features, title, curves_dir, pooled=True)
-    plot_nabla_feature_curves(df, features, title, curves_dir, pooled=True)
-    plot_outcome_distributions(df, features, title,
-                               os.path.join(base, "outcome_distributions"), pooled=True)
+    plot_difficulty_curves(df, features, title, base)
+    plot_nabla_feature_curves(df, features, title, base)
 
 
 def main() -> None:

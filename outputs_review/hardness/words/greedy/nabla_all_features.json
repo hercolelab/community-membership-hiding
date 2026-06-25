@@ -1,0 +1,166 @@
+{
+  "title": "words \u2014 greedy",
+  "method": "NABLA",
+  "features": {
+    "Degree": {
+      "feature_key": "degree",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 252,
+          "n_success": 244,
+          "success_rate": 0.9682539682539683,
+          "std": 0.1756720929662376,
+          "sem": 0.011066301673401993
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 90,
+          "n_success": 87,
+          "success_rate": 0.9666666666666667,
+          "std": 0.18051113445691197,
+          "sem": 0.019027544263491444
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 27,
+          "n_success": 20,
+          "success_rate": 0.7407407407407407,
+          "std": 0.44657608470472243,
+          "sem": 0.0859436075726402
+        }
+      ]
+    },
+    "Internal-edge fraction": {
+      "feature_key": "internal_ratio",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 252,
+          "n_success": 242,
+          "success_rate": 0.9603174603174603,
+          "std": 0.1956007662909427,
+          "sem": 0.012321690091892861
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 54,
+          "n_success": 49,
+          "success_rate": 0.9074074074074074,
+          "std": 0.2925824198357194,
+          "sem": 0.03981542423923756
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 63,
+          "n_success": 60,
+          "success_rate": 0.9523809523809523,
+          "std": 0.2146693953705459,
+          "sem": 0.02704580163081261
+        }
+      ]
+    },
+    "Betweenness centrality": {
+      "feature_key": "betweenness_centrality",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 261,
+          "n_success": 256,
+          "success_rate": 0.9808429118773946,
+          "std": 0.13734032069989457,
+          "sem": 0.00850115243257056
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 72,
+          "n_success": 62,
+          "success_rate": 0.8611111111111112,
+          "std": 0.3482574551765863,
+          "sem": 0.04104253469235572
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 36,
+          "n_success": 33,
+          "success_rate": 0.9166666666666666,
+          "std": 0.2803059552906941,
+          "sem": 0.04671765921511568
+        }
+      ]
+    },
+    "Embeddedness (intra-clustering)": {
+      "feature_key": "embeddedness",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 252,
+          "n_success": 239,
+          "success_rate": 0.9484126984126984,
+          "std": 0.22163252561799918,
+          "sem": 0.01396153679115185
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 72,
+          "n_success": 70,
+          "success_rate": 0.9722222222222222,
+          "std": 0.16548879560577057,
+          "sem": 0.019503041597205818
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 45,
+          "n_success": 42,
+          "success_rate": 0.9333333333333333,
+          "std": 0.25226248955475644,
+          "sem": 0.037605071654517735
+        }
+      ]
+    },
+    "Community size": {
+      "feature_key": "community_size",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Small",
+          "n": 27,
+          "n_success": 27,
+          "success_rate": 1.0,
+          "std": 0.0,
+          "sem": 0.0
+        },
+        {
+          "bin": 2,
+          "label": "Medium",
+          "n": 126,
+          "n_success": 121,
+          "success_rate": 0.9603174603174603,
+          "std": 0.19599157740244452,
+          "sem": 0.017460317460317457
+        },
+        {
+          "bin": 3,
+          "label": "Big",
+          "n": 216,
+          "n_success": 203,
+          "success_rate": 0.9398148148148148,
+          "std": 0.23838207159635602,
+          "sem": 0.016219845534407758
+        }
+      ]
+    }
+  }
+}

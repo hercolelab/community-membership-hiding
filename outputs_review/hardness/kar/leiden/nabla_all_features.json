@@ -1,0 +1,148 @@
+{
+  "title": "kar \u2014 leiden",
+  "method": "NABLA",
+  "features": {
+    "Degree": {
+      "feature_key": "degree",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 216,
+          "n_success": 91,
+          "success_rate": 0.4212962962962963,
+          "std": 0.4949138381061995,
+          "sem": 0.03367462138896083
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 63,
+          "n_success": 16,
+          "success_rate": 0.25396825396825395,
+          "std": 0.4387759354802626,
+          "sem": 0.055280571740976045
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 27,
+          "n_success": 0,
+          "success_rate": 0.0,
+          "std": 0.0,
+          "sem": 0.0
+        }
+      ]
+    },
+    "Internal-edge fraction": {
+      "feature_key": "internal_ratio",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 171,
+          "n_success": 50,
+          "success_rate": 0.29239766081871343,
+          "std": 0.4561998849773195,
+          "sem": 0.03488647713457921
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 135,
+          "n_success": 57,
+          "success_rate": 0.4222222222222222,
+          "std": 0.49575310818854873,
+          "sem": 0.04266763404099585
+        }
+      ]
+    },
+    "Betweenness centrality": {
+      "feature_key": "betweenness_centrality",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 216,
+          "n_success": 87,
+          "success_rate": 0.4027777777777778,
+          "std": 0.4915960401250875,
+          "sem": 0.0334488738299786
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 63,
+          "n_success": 20,
+          "success_rate": 0.31746031746031744,
+          "std": 0.4692271210638118,
+          "sem": 0.05911706051150683
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 27,
+          "n_success": 0,
+          "success_rate": 0.0,
+          "std": 0.0,
+          "sem": 0.0
+        }
+      ]
+    },
+    "Embeddedness (intra-clustering)": {
+      "feature_key": "embeddedness",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 171,
+          "n_success": 36,
+          "success_rate": 0.21052631578947367,
+          "std": 0.40887976538182924,
+          "sem": 0.03126781714663182
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 135,
+          "n_success": 71,
+          "success_rate": 0.5259259259259259,
+          "std": 0.501187092745584,
+          "sem": 0.043135316967505756
+        }
+      ]
+    },
+    "Community size": {
+      "feature_key": "community_size",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Small",
+          "n": 45,
+          "n_success": 10,
+          "success_rate": 0.2222222222222222,
+          "std": 0.4204374825912609,
+          "sem": 0.06267511942419625
+        },
+        {
+          "bin": 2,
+          "label": "Medium",
+          "n": 54,
+          "n_success": 9,
+          "success_rate": 0.16666666666666666,
+          "std": 0.3761773969316394,
+          "sem": 0.0511912597361626
+        },
+        {
+          "bin": 3,
+          "label": "Big",
+          "n": 207,
+          "n_success": 88,
+          "success_rate": 0.4251207729468599,
+          "std": 0.4955597599022253,
+          "sem": 0.034443784322092386
+        }
+      ]
+    }
+  }
+}

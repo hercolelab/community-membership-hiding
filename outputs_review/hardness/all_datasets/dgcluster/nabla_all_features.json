@@ -1,0 +1,166 @@
+{
+  "title": "all datasets \u2014 dgcluster",
+  "method": "NABLA",
+  "features": {
+    "Degree": {
+      "feature_key": "degree",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 7422,
+          "n_success": 3148,
+          "success_rate": 0.4241444354621396,
+          "std": 0.49424573456393417,
+          "sem": 0.005736968363199861
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 1659,
+          "n_success": 376,
+          "success_rate": 0.22664255575647982,
+          "std": 0.418785652595695,
+          "sem": 0.010281786972672494
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 1089,
+          "n_success": 138,
+          "success_rate": 0.12672176308539945,
+          "std": 0.33281386763626053,
+          "sem": 0.01008526871625032
+        }
+      ]
+    },
+    "Internal-edge fraction": {
+      "feature_key": "internal_ratio",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 6219,
+          "n_success": 2571,
+          "success_rate": 0.41341051616015434,
+          "std": 0.49248478284142994,
+          "sem": 0.006245001362792873
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 3129,
+          "n_success": 793,
+          "success_rate": 0.253435602428891,
+          "std": 0.43504768210090633,
+          "sem": 0.007777393584948017
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 822,
+          "n_success": 298,
+          "success_rate": 0.36253041362530414,
+          "std": 0.4810234935927097,
+          "sem": 0.01677762099242962
+        }
+      ]
+    },
+    "Betweenness centrality": {
+      "feature_key": "betweenness_centrality",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 7116,
+          "n_success": 3001,
+          "success_rate": 0.421725688589095,
+          "std": 0.4938698290923629,
+          "sem": 0.0058545635679415065
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 2034,
+          "n_success": 483,
+          "success_rate": 0.2374631268436578,
+          "std": 0.42563300836910734,
+          "sem": 0.009437562187656737
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 1020,
+          "n_success": 178,
+          "success_rate": 0.17450980392156862,
+          "std": 0.3797334622563232,
+          "sem": 0.011889915910138769
+        }
+      ]
+    },
+    "Embeddedness (intra-clustering)": {
+      "feature_key": "embeddedness",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 7098,
+          "n_success": 2516,
+          "success_rate": 0.3544660467737391,
+          "std": 0.4783848975794578,
+          "sem": 0.005678184020598659
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 2370,
+          "n_success": 942,
+          "success_rate": 0.39746835443037976,
+          "std": 0.4894776335944128,
+          "sem": 0.010054458334515117
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 702,
+          "n_success": 204,
+          "success_rate": 0.2905982905982906,
+          "std": 0.4543621961648861,
+          "sem": 0.017148795996700075
+        }
+      ]
+    },
+    "Community size": {
+      "feature_key": "community_size",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Small",
+          "n": 3474,
+          "n_success": 1481,
+          "success_rate": 0.42630972941853773,
+          "std": 0.4946111243530206,
+          "sem": 0.008391681126467626
+        },
+        {
+          "bin": 2,
+          "label": "Medium",
+          "n": 3771,
+          "n_success": 1287,
+          "success_rate": 0.3412887828162291,
+          "std": 0.47420499895994095,
+          "sem": 0.007722143391036993
+        },
+        {
+          "bin": 3,
+          "label": "Big",
+          "n": 2925,
+          "n_success": 894,
+          "success_rate": 0.30564102564102563,
+          "std": 0.4607571695752039,
+          "sem": 0.008519403079184893
+        }
+      ]
+    }
+  }
+}

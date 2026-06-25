@@ -1,0 +1,157 @@
+{
+  "title": "cond-mat \u2014 dgcluster",
+  "method": "NABLA",
+  "features": {
+    "Degree": {
+      "feature_key": "degree",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1911,
+          "n_success": 1241,
+          "success_rate": 0.6493982208267922,
+          "std": 0.47728332873893764,
+          "sem": 0.010918071181844652
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 519,
+          "n_success": 189,
+          "success_rate": 0.36416184971098264,
+          "std": 0.48165859359210844,
+          "sem": 0.021142465680937278
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 270,
+          "n_success": 59,
+          "success_rate": 0.21851851851851853,
+          "std": 0.41400845584906315,
+          "sem": 0.025195752251823727
+        }
+      ]
+    },
+    "Internal-edge fraction": {
+      "feature_key": "internal_ratio",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1890,
+          "n_success": 1131,
+          "success_rate": 0.5984126984126984,
+          "std": 0.4903490173994484,
+          "sem": 0.011279098965490805
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 285,
+          "n_success": 105,
+          "success_rate": 0.3684210526315789,
+          "std": 0.4832248968789551,
+          "sem": 0.028623772537150215
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 525,
+          "n_success": 253,
+          "success_rate": 0.4819047619047619,
+          "std": 0.5001490145085985,
+          "sem": 0.021828292549935423
+        }
+      ]
+    },
+    "Betweenness centrality": {
+      "feature_key": "betweenness_centrality",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1890,
+          "n_success": 1228,
+          "success_rate": 0.6497354497354497,
+          "std": 0.47717897183543245,
+          "sem": 0.010976159136867574
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 540,
+          "n_success": 205,
+          "success_rate": 0.37962962962962965,
+          "std": 0.48574470096887634,
+          "sem": 0.02090312374845511
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 270,
+          "n_success": 56,
+          "success_rate": 0.2074074074074074,
+          "std": 0.40620276761829527,
+          "sem": 0.02472071319395215
+        }
+      ]
+    },
+    "Embeddedness (intra-clustering)": {
+      "feature_key": "embeddedness",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1458,
+          "n_success": 740,
+          "success_rate": 0.5075445816186557,
+          "std": 0.5001146125346565,
+          "sem": 0.013097571625694013
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 1242,
+          "n_success": 749,
+          "success_rate": 0.6030595813204509,
+          "std": 0.4894605341569077,
+          "sem": 0.013888549208324443
+        }
+      ]
+    },
+    "Community size": {
+      "feature_key": "community_size",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Small",
+          "n": 900,
+          "n_success": 604,
+          "success_rate": 0.6711111111111111,
+          "std": 0.47007074573335733,
+          "sem": 0.015669024857778577
+        },
+        {
+          "bin": 2,
+          "label": "Medium",
+          "n": 900,
+          "n_success": 473,
+          "success_rate": 0.5255555555555556,
+          "std": 0.4996241326082669,
+          "sem": 0.016654137753608897
+        },
+        {
+          "bin": 3,
+          "label": "Big",
+          "n": 900,
+          "n_success": 412,
+          "success_rate": 0.4577777777777778,
+          "std": 0.49849111096863585,
+          "sem": 0.016616370365621195
+        }
+      ]
+    }
+  }
+}

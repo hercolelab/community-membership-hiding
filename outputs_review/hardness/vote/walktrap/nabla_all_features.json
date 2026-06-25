@@ -1,0 +1,157 @@
+{
+  "title": "vote \u2014 walktrap",
+  "method": "NABLA",
+  "features": {
+    "Degree": {
+      "feature_key": "degree",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1431,
+          "n_success": 646,
+          "success_rate": 0.45143256464011183,
+          "std": 0.4978095819586557,
+          "sem": 0.013159622611933278
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 360,
+          "n_success": 19,
+          "success_rate": 0.05277777777777778,
+          "std": 0.22390073296767082,
+          "sem": 0.011800604765983186
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 216,
+          "n_success": 5,
+          "success_rate": 0.023148148148148147,
+          "std": 0.15072320633129876,
+          "sem": 0.010255415219664136
+        }
+      ]
+    },
+    "Internal-edge fraction": {
+      "feature_key": "internal_ratio",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1053,
+          "n_success": 275,
+          "success_rate": 0.2611585944919278,
+          "std": 0.43947491408389777,
+          "sem": 0.01354315672657799
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 954,
+          "n_success": 395,
+          "success_rate": 0.4140461215932914,
+          "std": 0.4928148819172236,
+          "sem": 0.015955470918848795
+        }
+      ]
+    },
+    "Betweenness centrality": {
+      "feature_key": "betweenness_centrality",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1404,
+          "n_success": 555,
+          "success_rate": 0.3952991452991453,
+          "std": 0.489089058525764,
+          "sem": 0.013052821331333135
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 402,
+          "n_success": 97,
+          "success_rate": 0.24129353233830847,
+          "std": 0.4284010967058945,
+          "sem": 0.021366704678143934
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 201,
+          "n_success": 18,
+          "success_rate": 0.08955223880597014,
+          "std": 0.2862521589568587,
+          "sem": 0.020190670535027884
+        }
+      ]
+    },
+    "Embeddedness (intra-clustering)": {
+      "feature_key": "embeddedness",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1404,
+          "n_success": 569,
+          "success_rate": 0.40527065527065526,
+          "std": 0.4911192775666361,
+          "sem": 0.013107003869138932
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 390,
+          "n_success": 48,
+          "success_rate": 0.12307692307692308,
+          "std": 0.3289474829053847,
+          "sem": 0.01665690328206823
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 213,
+          "n_success": 53,
+          "success_rate": 0.24882629107981222,
+          "std": 0.4333513900174395,
+          "sem": 0.029692747982801686
+        }
+      ]
+    },
+    "Community size": {
+      "feature_key": "community_size",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Small",
+          "n": 51,
+          "n_success": 41,
+          "success_rate": 0.803921568627451,
+          "std": 0.4009791936316524,
+          "sem": 0.05614831789520138
+        },
+        {
+          "bin": 2,
+          "label": "Medium",
+          "n": 54,
+          "n_success": 45,
+          "success_rate": 0.8333333333333334,
+          "std": 0.3761773969316394,
+          "sem": 0.0511912597361626
+        },
+        {
+          "bin": 3,
+          "label": "Big",
+          "n": 1902,
+          "n_success": 584,
+          "success_rate": 0.3070452155625657,
+          "std": 0.46138961372188136,
+          "sem": 0.01057943702300238
+        }
+      ]
+    }
+  }
+}

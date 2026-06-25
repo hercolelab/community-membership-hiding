@@ -1,0 +1,157 @@
+{
+  "title": "pow \u2014 dgcluster",
+  "method": "NABLA",
+  "features": {
+    "Degree": {
+      "feature_key": "degree",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1803,
+          "n_success": 698,
+          "success_rate": 0.38713255684969494,
+          "std": 0.4872295204678992,
+          "sem": 0.011474551784985862
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 108,
+          "n_success": 26,
+          "success_rate": 0.24074074074074073,
+          "std": 0.42952637185517767,
+          "sem": 0.041331194402438355
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 285,
+          "n_success": 42,
+          "success_rate": 0.14736842105263157,
+          "std": 0.35509632850873785,
+          "sem": 0.021034091168852485
+        }
+      ]
+    },
+    "Internal-edge fraction": {
+      "feature_key": "internal_ratio",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1239,
+          "n_success": 454,
+          "success_rate": 0.36642453591606133,
+          "std": 0.48202191000392847,
+          "sem": 0.013694025305764832
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 957,
+          "n_success": 312,
+          "success_rate": 0.32601880877742945,
+          "std": 0.46899934836543083,
+          "sem": 0.01516059584658219
+        }
+      ]
+    },
+    "Betweenness centrality": {
+      "feature_key": "betweenness_centrality",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1548,
+          "n_success": 595,
+          "success_rate": 0.38436692506459946,
+          "std": 0.48660245776016275,
+          "sem": 0.012367696521459413
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 426,
+          "n_success": 113,
+          "success_rate": 0.2652582159624413,
+          "std": 0.44198967673929207,
+          "sem": 0.02141446980991312
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 222,
+          "n_success": 58,
+          "success_rate": 0.26126126126126126,
+          "std": 0.4403148135750212,
+          "sem": 0.02955199533313098
+        }
+      ]
+    },
+    "Embeddedness (intra-clustering)": {
+      "feature_key": "embeddedness",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Low (0-70%)",
+          "n": 1956,
+          "n_success": 729,
+          "success_rate": 0.3726993865030675,
+          "std": 0.4836467117745816,
+          "sem": 0.01093563016293592
+        },
+        {
+          "bin": 2,
+          "label": "Medium (70-90%)",
+          "n": 33,
+          "n_success": 0,
+          "success_rate": 0.0,
+          "std": 0.0,
+          "sem": 0.0
+        },
+        {
+          "bin": 3,
+          "label": "High (90-100%)",
+          "n": 207,
+          "n_success": 37,
+          "success_rate": 0.178743961352657,
+          "std": 0.3840665991368959,
+          "sem": 0.026694473959307755
+        }
+      ]
+    },
+    "Community size": {
+      "feature_key": "community_size",
+      "groups": [
+        {
+          "bin": 1,
+          "label": "Small",
+          "n": 396,
+          "n_success": 195,
+          "success_rate": 0.49242424242424243,
+          "std": 0.5005750433182776,
+          "sem": 0.02515484239549436
+        },
+        {
+          "bin": 2,
+          "label": "Medium",
+          "n": 900,
+          "n_success": 335,
+          "success_rate": 0.37222222222222223,
+          "std": 0.4836659640706543,
+          "sem": 0.016122198802355145
+        },
+        {
+          "bin": 3,
+          "label": "Big",
+          "n": 900,
+          "n_success": 236,
+          "success_rate": 0.26222222222222225,
+          "std": 0.44008740606653474,
+          "sem": 0.014669580202217824
+        }
+      ]
+    }
+  }
+}
