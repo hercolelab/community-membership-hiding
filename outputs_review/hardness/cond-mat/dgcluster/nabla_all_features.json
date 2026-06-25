@@ -1,5 +1,5 @@
 {
-  "title": "cond-mat \u2014 dgcluster",
+  "title": "",
   "method": "NABLA",
   "features": {
     "Degree": {
@@ -34,39 +34,7 @@
         }
       ]
     },
-    "Internal-edge fraction": {
-      "feature_key": "internal_ratio",
-      "groups": [
-        {
-          "bin": 1,
-          "label": "Low (0-70%)",
-          "n": 1890,
-          "n_success": 1131,
-          "success_rate": 0.5984126984126984,
-          "std": 0.4903490173994484,
-          "sem": 0.011279098965490805
-        },
-        {
-          "bin": 2,
-          "label": "Medium (70-90%)",
-          "n": 285,
-          "n_success": 105,
-          "success_rate": 0.3684210526315789,
-          "std": 0.4832248968789551,
-          "sem": 0.028623772537150215
-        },
-        {
-          "bin": 3,
-          "label": "High (90-100%)",
-          "n": 525,
-          "n_success": 253,
-          "success_rate": 0.4819047619047619,
-          "std": 0.5001490145085985,
-          "sem": 0.021828292549935423
-        }
-      ]
-    },
-    "Betweenness centrality": {
+    "Centrality": {
       "feature_key": "betweenness_centrality",
       "groups": [
         {
@@ -95,29 +63,6 @@
           "success_rate": 0.2074074074074074,
           "std": 0.40620276761829527,
           "sem": 0.02472071319395215
-        }
-      ]
-    },
-    "Embeddedness (intra-clustering)": {
-      "feature_key": "embeddedness",
-      "groups": [
-        {
-          "bin": 1,
-          "label": "Low (0-70%)",
-          "n": 1458,
-          "n_success": 740,
-          "success_rate": 0.5075445816186557,
-          "std": 0.5001146125346565,
-          "sem": 0.013097571625694013
-        },
-        {
-          "bin": 2,
-          "label": "Medium (70-90%)",
-          "n": 1242,
-          "n_success": 749,
-          "success_rate": 0.6030595813204509,
-          "std": 0.4894605341569077,
-          "sem": 0.013888549208324443
         }
       ]
     },

@@ -1,5 +1,5 @@
 {
-  "title": "all datasets \u2014 leiden",
+  "title": "",
   "method": "NABLA",
   "features": {
     "Degree": {
@@ -34,39 +34,7 @@
         }
       ]
     },
-    "Internal-edge fraction": {
-      "feature_key": "internal_ratio",
-      "groups": [
-        {
-          "bin": 1,
-          "label": "Low (0-70%)",
-          "n": 6855,
-          "n_success": 2015,
-          "success_rate": 0.2939460247994165,
-          "std": 0.45560074592686123,
-          "sem": 0.005502761586239964
-        },
-        {
-          "bin": 2,
-          "label": "Medium (70-90%)",
-          "n": 3513,
-          "n_success": 1312,
-          "success_rate": 0.3734699686877313,
-          "std": 0.4837941474153816,
-          "sem": 0.008162468821362456
-        },
-        {
-          "bin": 3,
-          "label": "High (90-100%)",
-          "n": 63,
-          "n_success": 39,
-          "success_rate": 0.6190476190476191,
-          "std": 0.4895215382447743,
-          "sem": 0.06167391674311746
-        }
-      ]
-    },
-    "Betweenness centrality": {
+    "Centrality": {
       "feature_key": "betweenness_centrality",
       "groups": [
         {
@@ -95,38 +63,6 @@
           "success_rate": 0.16473988439306358,
           "std": 0.37112443461455247,
           "sem": 0.011519161633884811
-        }
-      ]
-    },
-    "Embeddedness (intra-clustering)": {
-      "feature_key": "embeddedness",
-      "groups": [
-        {
-          "bin": 1,
-          "label": "Low (0-70%)",
-          "n": 6933,
-          "n_success": 2483,
-          "success_rate": 0.35814221837588345,
-          "std": 0.4794888230350764,
-          "sem": 0.005758612930067844
-        },
-        {
-          "bin": 2,
-          "label": "Medium (70-90%)",
-          "n": 2745,
-          "n_success": 654,
-          "success_rate": 0.23825136612021858,
-          "std": 0.4260912959415837,
-          "sem": 0.008132638877392942
-        },
-        {
-          "bin": 3,
-          "label": "High (90-100%)",
-          "n": 753,
-          "n_success": 229,
-          "success_rate": 0.3041168658698539,
-          "std": 0.4603381587124404,
-          "sem": 0.016775655081358573
         }
       ]
     },

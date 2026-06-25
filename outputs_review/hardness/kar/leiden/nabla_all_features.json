@@ -1,5 +1,5 @@
 {
-  "title": "kar \u2014 leiden",
+  "title": "",
   "method": "NABLA",
   "features": {
     "Degree": {
@@ -34,30 +34,7 @@
         }
       ]
     },
-    "Internal-edge fraction": {
-      "feature_key": "internal_ratio",
-      "groups": [
-        {
-          "bin": 1,
-          "label": "Low (0-70%)",
-          "n": 171,
-          "n_success": 50,
-          "success_rate": 0.29239766081871343,
-          "std": 0.4561998849773195,
-          "sem": 0.03488647713457921
-        },
-        {
-          "bin": 2,
-          "label": "Medium (70-90%)",
-          "n": 135,
-          "n_success": 57,
-          "success_rate": 0.4222222222222222,
-          "std": 0.49575310818854873,
-          "sem": 0.04266763404099585
-        }
-      ]
-    },
-    "Betweenness centrality": {
+    "Centrality": {
       "feature_key": "betweenness_centrality",
       "groups": [
         {
@@ -86,29 +63,6 @@
           "success_rate": 0.0,
           "std": 0.0,
           "sem": 0.0
-        }
-      ]
-    },
-    "Embeddedness (intra-clustering)": {
-      "feature_key": "embeddedness",
-      "groups": [
-        {
-          "bin": 1,
-          "label": "Low (0-70%)",
-          "n": 171,
-          "n_success": 36,
-          "success_rate": 0.21052631578947367,
-          "std": 0.40887976538182924,
-          "sem": 0.03126781714663182
-        },
-        {
-          "bin": 2,
-          "label": "Medium (70-90%)",
-          "n": 135,
-          "n_success": 71,
-          "success_rate": 0.5259259259259259,
-          "std": 0.501187092745584,
-          "sem": 0.043135316967505756
         }
       ]
     },

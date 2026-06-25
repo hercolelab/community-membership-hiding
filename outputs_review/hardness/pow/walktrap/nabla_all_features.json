@@ -1,5 +1,5 @@
 {
-  "title": "pow \u2014 walktrap",
+  "title": "",
   "method": "NABLA",
   "features": {
     "Degree": {
@@ -34,21 +34,7 @@
         }
       ]
     },
-    "Internal-edge fraction": {
-      "feature_key": "internal_ratio",
-      "groups": [
-        {
-          "bin": 1,
-          "label": "Low (0-70%)",
-          "n": 2349,
-          "n_success": 1250,
-          "success_rate": 0.5321413367390379,
-          "std": 0.49907210710515154,
-          "sem": 0.010297262633736107
-        }
-      ]
-    },
-    "Betweenness centrality": {
+    "Centrality": {
       "feature_key": "betweenness_centrality",
       "groups": [
         {
@@ -77,38 +63,6 @@
           "success_rate": 0.32051282051282054,
           "std": 0.46767408436982283,
           "sem": 0.03057281131029955
-        }
-      ]
-    },
-    "Embeddedness (intra-clustering)": {
-      "feature_key": "embeddedness",
-      "groups": [
-        {
-          "bin": 1,
-          "label": "Low (0-70%)",
-          "n": 1872,
-          "n_success": 1128,
-          "success_rate": 0.6025641025641025,
-          "std": 0.4894983155361379,
-          "sem": 0.011313533819992283
-        },
-        {
-          "bin": 2,
-          "label": "Medium (70-90%)",
-          "n": 240,
-          "n_success": 43,
-          "success_rate": 0.17916666666666667,
-          "std": 0.3842932617391711,
-          "sem": 0.02480602337959229
-        },
-        {
-          "bin": 3,
-          "label": "High (90-100%)",
-          "n": 237,
-          "n_success": 79,
-          "success_rate": 0.3333333333333333,
-          "std": 0.4724022034325302,
-          "sem": 0.03068582059661078
         }
       ]
     },

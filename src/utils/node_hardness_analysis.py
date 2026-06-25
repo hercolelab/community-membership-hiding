@@ -130,9 +130,9 @@ PARTITION_SEED: int = 2025
 # left in the master table so a co-author can pick alternatives.
 REVIEWER_FEATURES: List[tuple] = [
     ("degree", "Degree"),
-    ("internal_ratio", "Internal-edge fraction"),
-    ("betweenness_centrality", "Betweenness centrality"),
-    ("embeddedness", "Embeddedness (intra-clustering)"),
+    ("internal_ratio", "Internal ratio"),
+    ("betweenness_centrality", "Centrality"),
+    ("embeddedness", "Embeddedness"),
     ("community_size", "Community size"),
 ]
 EXTRA_FEATURES: List[tuple] = [
@@ -471,6 +471,12 @@ def plot_nabla_feature_curves(df: pd.DataFrame, features: List[tuple], title: st
     group_cols = ["dataset", "detection_alg"]
     check_dir(save_dir)
 
+    # The nabla feature plot only shows the unambiguous size/attachment features.
+    # internal_ratio and embeddedness are dropped here (heavily discretised, confounded
+    # with internal degree) while still being computed/stored elsewhere.
+    _NABLA_SKIP = {"internal_ratio", "embeddedness"}
+    features = [(feat, label) for feat, label in features if feat not in _NABLA_SKIP]
+
     nabla = df[df["method"] == "NABLA"]
     if nabla.empty:
         return
@@ -511,22 +517,25 @@ def plot_nabla_feature_curves(df: pd.DataFrame, features: List[tuple], title: st
 
     long_df = pd.concat(parts, ignore_index=True)
 
-    fig, ax = plt.subplots(figsize=(7.5, 5))
+    fig, ax = plt.subplots(figsize=(12, 5))
     sns.lineplot(
         data=long_df, x="bin", y="goal", hue="Characteristic",
         hue_order=[lab for _, lab in features], palette=palette,
         estimator="mean", errorbar=("ci", 95), marker="o", ax=ax, legend=True,
     )
-    ax.set_xlabel("Feature group (low → high)", fontsize=12)
-    ax.set_ylabel("Success rate", fontsize=12)
+    ax.set_xlabel("Feature group", fontsize=25)
+    ax.set_ylabel("Success rate", fontsize=25)
     ax.set_ylim(-0.02, 1.02)
+    ax.set_yticks([i * 0.1 for i in range(0, 11)])
     ax.set_xticks([1, 2, 3])
-    ax.set_xticklabels(["Low", "Medium", "High"])
+    ax.set_xticklabels(["Low", "Medium", "High"], fontsize=25)
+    ax.tick_params(axis="y", labelsize=20)
     for s in ax.spines.values():
         s.set_visible(True)
         s.set_color("black")
-    ax.set_title(rf"{title} — $\nabla$-CMH", fontsize=12)
-    ax.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)
+    # No title; legend inside the plot, top-right, with a frame.
+    ax.legend(loc="upper right", frameon=True, fontsize=20, ncol=1,
+              handletextpad=0.4, labelspacing=0.3)
     fig.savefig(os.path.join(save_dir, "nabla_all_features.pdf"), bbox_inches="tight", dpi=300)
     plt.close(fig)
 
