@@ -75,6 +75,7 @@ class DetectionAlgorithmsNames(Enum):
     SCD = "scd"
     LOC = "locale"
     DGC = "dgcluster"
+    SURR = "surrogate"
 
 class EvasionAlgorithmsNames(Enum):
     RAND = "random"

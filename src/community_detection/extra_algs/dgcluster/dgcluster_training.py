@@ -101,7 +101,7 @@ def compute_fast_modularity(clusters, num_nodes, num_edges, torch_sparse_adj, de
 
 def parse_args():
     args = argparse.ArgumentParser(description='DGCluster arguments.')
-    args.add_argument('--dataset', type=str, default='kar', choices=['kar', 'words', 'vote', 'pow', 'fb-75', 'cond-mat', 'fb-art', 'dblp'])
+    args.add_argument('--dataset', type=str, default='kar', choices=['kar', 'words', 'vote', 'pow', 'fb-75', 'cond-mat', 'fb-art', 'dblp', 'yt'])
     args.add_argument('--lam', type=float, default=0.2)
     args.add_argument('--alp', type=float, default=0)
     args.add_argument('--device', type=str, default='cpu', choices=['cpu', 'cuda:0'])
@@ -111,7 +111,7 @@ def parse_args():
     args = args.parse_args()
     return args
 
-def from_ig_graph_to_node2vec_geometric_data(graph: ig.Graph) -> Data:
+def from_ig_graph_to_geometric_data(graph: ig.Graph) -> Data:
     """
     Convert an igraph graph to a PyTorch Geometric Data object.
     """
@@ -128,28 +128,28 @@ def from_ig_graph_to_node2vec_geometric_data(graph: ig.Graph) -> Data:
 def load_dataset(dataset_name):
     if dataset_name == 'kar':
         graph = import_graph(file_path=FilePaths.KAR.value)
-        dataset = from_ig_graph_to_node2vec_geometric_data(graph)
+        dataset = from_ig_graph_to_geometric_data(graph)
     elif dataset_name == 'words':
         graph = import_graph(file_path=FilePaths.WORDS.value)
-        dataset = from_ig_graph_to_node2vec_geometric_data(graph)
+        dataset = from_ig_graph_to_geometric_data(graph)
     elif dataset_name == 'vote':
         graph = import_graph(file_path=FilePaths.VOTE.value)
-        dataset = from_ig_graph_to_node2vec_geometric_data(graph)
+        dataset = from_ig_graph_to_geometric_data(graph)
     elif dataset_name == 'pow':
         graph = import_graph(file_path=FilePaths.POW.value)
-        dataset = from_ig_graph_to_node2vec_geometric_data(graph)
+        dataset = from_ig_graph_to_geometric_data(graph)
     elif dataset_name == 'fb-75':
         graph = import_graph(file_path=FilePaths.FB_75.value)
-        dataset = from_ig_graph_to_node2vec_geometric_data(graph)
+        dataset = from_ig_graph_to_geometric_data(graph)
     elif dataset_name == 'cond-mat':
         graph = import_graph(file_path=FilePaths.COND_MAT.value)
-        dataset = from_ig_graph_to_node2vec_geometric_data(graph)
+        dataset = from_ig_graph_to_geometric_data(graph)
     elif dataset_name == 'fb-art':
         graph = import_graph(file_path=FilePaths.FB_ART.value)
-        dataset = from_ig_graph_to_node2vec_geometric_data(graph)
+        dataset = from_ig_graph_to_geometric_data(graph)
     elif dataset_name == 'dblp':
         graph = import_graph(file_path=FilePaths.DBLP.value)
-        dataset = from_ig_graph_to_node2vec_geometric_data(graph)
+        dataset = from_ig_graph_to_geometric_data(graph)
     else:
         raise NotImplementedError(f'Dataset: {dataset_name} not implemented.')
     return dataset
